@@ -1,0 +1,23 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+RUST_BACKTRACE = 0
+
+[config]
+skip_core_tasks = true
+
+[tasks.readmes]
+description = "Extracts readmes from doc strings"
+env = { "CARGO_MAKE_WORKSPACE_INCLUDE_MEMBERS" = [
+    "crud-api",
+    "crud",
+    "crud-derive",
+    "crud-derive-api",
+    "crud-api-endpoint",
+    "crud-auth",
+    "crud-auth-bearer",
+    "crud-auth-no-auth",
+    "crud-tidy-viewer",
+] }
+run_task = { name = "readme", fork=true }
+workspace = false
+

@@ -1,0 +1,4 @@
+tab_spaces=2
+max_width=102
+newline_style="Unix"
+edition = "2021"

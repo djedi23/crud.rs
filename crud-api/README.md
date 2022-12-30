@@ -1,0 +1,149 @@
+## Crud Api
+
+This crate provides a framework to generate an executable to manipulate your HTTP API from CLI.
+
+The apps using this lib can replace your _curl_ queries when you need to access to your favorite API.
+
+### Features
+
+API:
+- data are encoded in JSON. It don't support XML, grpc, ...
+- output can be formated on json, yaml, toml, csv or tsv
+- output stream on stdout or in a file
+
+
+### Tutorial
+
+Let's create an CLI for [jsonplaceholder](http://jsonplaceholder.typicode.com/) API.
+For the impatients, the whole code of this example can be found in [`examples/jsonplaceholder_api.rs`](./examples/jsonplaceholder_api.rs "jsonplaceholder_api.rs")
+
+First add these dependencies to `Cargo.toml`:
+```toml
+[dependencies]
+log = "0.4"
+pretty_env_logger = "0.4"
+clap = "4.0"
+crud-api = {version = "0.1", path="../crud/crud-api", default-features=false, features=["toml","json","yaml"]}
+crud-auth = {version = "0.1", path="../crud/crud-auth"}
+crud-auth-bearer = {version = "0.1", path="../crud/crud-auth-bearer"}
+hyper = "0.14"
+hyper-tls = "0.5"
+miette = { version = "5.2", features = ["fancy"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+# To force static openssl
+openssl = { version = "0.10", features = ["vendored"] }
+```
+
+Now, create a minimal runner stucture and a `main` function.
+`ApiRun` on `JSONPlaceHolder` derives all the CLI.
+```rust
+use crud_api::ApiRun;
+use crud_auth::CrudAuth;
+use crud_auth_no_auth::Auth;
+use miette::{IntoDiagnostic, Result};
+
+#[derive(ApiRun)]
+struct JSONPlaceHolder;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+  JSONPlaceHolder::run().await
+}
+```
+[`crud_api_endpoint::ApiRun`] accepts some parameters. They are documented in `crud_api_endoint` crate.
+Let's customize our CLI with a `base_url` for our API, a `name` used in the documentation and the settings. `qualifier` and `organisation` is used to compute the settings location and `env_prefix` is the prefix of the environment variables
+```rust
+#[derive(ApiRun)]
+#[api(infos(
+  base_url = "http://jsonplaceholder.typicode.com",
+  name = "jsonplaceholder",
+  qualifier = "com",
+  organisation = "typicode",
+  env_prefix = "JSONPLACEHOLDER"
+))]
+struct JSONPlaceHolder;
+```
+Before creating the first endpoint we need to describe its output structure.
+```rust
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Default, Deserialize, Serialize)]
+struct Post {
+  id: u32,
+  #[serde(rename = "userId")]
+  user_id: u32,
+  title: String,
+  body: String,
+}
+```
+
+Now, we can declare the endpoint.
+The minimal parameters are:
+- `route`, the target api route.
+- `cli_route`, the route transcipted as cli arguments. Each slash separate a subcommand.
+The other parameters can found in [`crud_api_endpoint::Api`] and [`crud_api_endpoint::Enpoint`] structs documentation.
+
+```rust
+use crud_api::Api;
+#[derive(Api, Debug, Default, Deserialize, Serialize)]
+#[api(
+  endpoint(
+    route = "/posts",
+    cli_route = "/post",
+    multiple_results,
+  ))]
+struct Post {
+  id: u32,
+  #[serde(rename = "userId")]
+  user_id: u32,
+  title: String,
+  body: String,
+}
+```
+
+We can create more complex enpoint. Let's create an edit route.
+
+- The `route` parameter takes a post's `id` argument. This argument should be present in the `cli_route`.
+- the HTTP method is set with the `method` parameter.
+- Some help can be provided via the parameters `cli_help` and `cli_long_help`.
+- the payload is described by the struct declared with the `payload_struct`. The query parameter can be add with the `query_struct` parameter.
+
+In this step, the payload structure is `PostCreate` (the same structure is used for both creation and update). `PostCreate` derives `ApiInput`. All `PostCreate` fields parameters are describe in the [`crud_api_endpoint::ApiInputConfig`] structs.
+
+
+```rust
+use crud_api::{Api, ApiInput};
+#[derive(Api, Debug, Default, Deserialize, Serialize)]
+#[api(
+  endpoint(
+    route = "/posts",
+    cli_route = "/post",
+    multiple_results,
+  ),
+  endpoint(
+    route = "/posts/{id}",
+    method = "PUT",
+    payload_struct = "PostCreate",
+    cli_route = "/post/{id}/replace",
+    cli_help = "Update a Posts (replace the whole post)"
+  )
+)]
+struct Post {
+  id: u32,
+  #[serde(rename = "userId")]
+  user_id: u32,
+  title: String,
+  body: String,
+}
+
+#[derive(Debug, ApiInput, Default, Serialize, Deserialize)]
+#[allow(dead_code, non_snake_case)]
+struct PostCreate {
+  #[api(long = "user-id")]
+  userId: u32,
+  #[api(no_short, help = "Title of the post")]
+  title: String,
+  #[api(no_short)]
+  body: String,
+}
+```

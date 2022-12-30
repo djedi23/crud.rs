@@ -1,0 +1,33 @@
+[package]
+name = "crud"
+version = "0.1.0"
+edition = "2021"
+authors= ["Mose Valvassori <moise.valvassori@gmail.com>"]
+description= "CLI generator for your favorite CRUD REST API."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#crud-derive = {version = "0.1", path="../crud-derive", features=["dump-derives"]}
+crud-derive = {version = "0.1", path="../crud-derive"}
+crud-api = {version = "0.1", path="../crud-api"}
+#crud-api-derive = {version = "0.1", path="../crud-api-derive", features=["dump-derives"]}
+crud-api-derive = {version = "0.1", path="../crud-api-derive"}
+crud-auth = {version = "0.1", path="../crud-auth"}
+
+[dev-dependencies]
+crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
+crud-auth-bearer = {version = "0.1", path="../crud-auth-bearer"}
+openssl = { version = "0.10", features = ["vendored"] }
+
+miette = { version = "5.1.1", features = ["fancy"] }
+log = "^0.4"
+pretty_env_logger = "^0.4"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+hyper = { version = "0.14", features = ["full"] }
+clap = { version = "4.0", features = ["color","cargo","env","suggestions","unicode"] }
+
+
+[[example]]
+name="jsonplaceholder"

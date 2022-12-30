@@ -1,0 +1,30 @@
+[package]
+name = "crud-api-endpoint"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+syn = {version="1.0", features=["extra-traits"]}
+derive_builder = "0.11.2"
+darling = "0.14.1"
+proc-macro-error = "1.0.4"
+proc-macro2 = "1.0.32"
+quote = "1.0"
+lazy_static = "1.4.0"
+
+serde_json = "1.0.73"
+serde = { version = "1.0", features = ["derive"] }
+
+
+# dev-dependencies for running the doc tests
+[dev-dependencies]
+crud-api = {version = "0.1", path="../crud-api"}
+crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
+crud-auth = {version = "0.1", path="../crud-auth"}
+clap = { version = "4.0", features = ["color","cargo","env","suggestions","unicode"] }
+log = "^0.4"
+pretty_env_logger = "^0.4"
+miette = { version = "5.1.1", features = ["fancy"] }
+openssl = { version = "0.10", features = ["vendored"] }

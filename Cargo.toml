@@ -1,0 +1,13 @@
+[workspace]
+members = [
+        "crud",
+        "crud-derive",
+        "crud-api",
+        "crud-api-derive",
+        "crud-api-endpoint",
+        "crud-tidy-viewer",
+        "crud-auth",
+        "crud-auth-bearer",
+        "crud-auth-no-auth"
+]
+

@@ -1,0 +1,28 @@
+[tasks.readme_cmd]
+description="Extract README.md from doc strings"
+install_crate = "cargo-readme"
+command = "cargo"
+args = ["readme", "-o", "README.md"]
+
+[tasks.readme]
+script_runner = "@duckscript"
+script = [
+'''
+trigger = set false
+if is_path_exists "README.md"
+    if is_path_newer "README.tpl" "README.md"
+        trigger = set true
+    end
+    if is_path_newer "src/lib.rs" "README.md"
+        trigger = set true
+    end
+    else
+        trigger = set true
+end
+
+if ${trigger}
+        cm_run_task readme_cmd
+end
+
+'''
+]

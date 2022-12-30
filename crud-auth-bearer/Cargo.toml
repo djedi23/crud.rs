@@ -1,0 +1,14 @@
+[package]
+name = "crud-auth-bearer"
+version = "0.1.0"
+edition = "2021"
+authors= ["Mose Valvassori <moise.valvassori@gmail.com>"]
+description= "Auth bearer for CLI generator for your favorite API."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = {version="4.0",features=["cargo","env","unicode"]}
+crud-auth = {version = "0.1", path="../crud-auth"}
+config = "0.13"
+owo-colors = "3.4.0" # to color the help message
