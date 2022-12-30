@@ -9,7 +9,7 @@ on:
     types: [created]
 
 jobs:
-  publish-to-crate.io:
+  publish-to-crateio:
     name: Publishing to crate.io
     runs-on: ubuntu-latest
     steps:
