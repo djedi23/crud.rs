@@ -2,6 +2,10 @@
 name = "crud-derive"
 version = "0.1.0"
 edition = "2021"
+description= "CLI generator for your API. derive Crud implementation."
+license = "MIT"
+homepage = "https://github.com/djedi23/crud.rs"
+repository= "https://github.com/djedi23/crud.rs"
 
 [lib]
 proc-macro = true

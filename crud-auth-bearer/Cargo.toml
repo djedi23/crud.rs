@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 authors= ["Mose Valvassori <moise.valvassori@gmail.com>"]
 description= "Auth bearer for CLI generator for your favorite API."
+license = "MIT"
+homepage = "https://github.com/djedi23/crud.rs"
+repository= "https://github.com/djedi23/crud.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
