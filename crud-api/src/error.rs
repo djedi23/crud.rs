@@ -151,11 +151,7 @@ impl From<clap::Error> for ClapError {
         if invalid_value.is_empty() {
           //	              let src = env::args().collect::<Vec<String>>().join(" ");
           let invalid_arg = from_context(&e, ContextKind::InvalidArg);
-          let ia = invalid_arg
-            .split(' ')
-            .into_iter()
-            .next()
-            .unwrap_or_default();
+          let ia = invalid_arg.split(' ').next().unwrap_or_default();
           let re = Regex::new(ia).unwrap();
           let caps = re.find(&src);
 
@@ -252,14 +248,7 @@ impl From<clap::Error> for ClapError {
       clap::error::ErrorKind::ArgumentConflict => {
         let src = env::args().collect::<Vec<String>>().join(" ");
         let invalid_arg = from_context(&e, ContextKind::InvalidArg);
-        let re = Regex::new(
-          invalid_arg
-            .split(' ')
-            .into_iter()
-            .next()
-            .unwrap_or_default(),
-        )
-        .unwrap();
+        let re = Regex::new(invalid_arg.split(' ').next().unwrap_or_default()).unwrap();
         let caps = re.find(&src).unwrap();
 
         let priors = vec_from_context(&e, ContextKind::PriorArg);
