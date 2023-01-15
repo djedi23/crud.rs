@@ -310,7 +310,7 @@ dependencies = [
 
 [[package]]
 name = "crud"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "crud-api",
@@ -330,7 +330,7 @@ dependencies = [
 
 [[package]]
 name = "crud-api"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -365,7 +365,7 @@ dependencies = [
 
 [[package]]
 name = "crud-api-derive"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "crud-api-endpoint",
  "darling",
@@ -378,7 +378,7 @@ dependencies = [
 
 [[package]]
 name = "crud-api-endpoint"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "crud-api",
@@ -411,7 +411,7 @@ dependencies = [
 
 [[package]]
 name = "crud-auth-bearer"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "config",
@@ -421,7 +421,7 @@ dependencies = [
 
 [[package]]
 name = "crud-auth-no-auth"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "config",
@@ -430,7 +430,7 @@ dependencies = [
 
 [[package]]
 name = "crud-derive"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "crud-api-endpoint",
  "darling",
@@ -442,7 +442,7 @@ dependencies = [
 
 [[package]]
 name = "crud-tidy-viewer"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "atty",
  "calm_io",

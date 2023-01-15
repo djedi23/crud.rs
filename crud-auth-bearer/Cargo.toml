@@ -1,6 +1,6 @@
 [package]
 name = "crud-auth-bearer"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors= ["Mose Valvassori <moise.valvassori@gmail.com>"]
 description= "Auth bearer for CLI generator for your favorite API."
