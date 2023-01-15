@@ -96,7 +96,7 @@ pub fn arg_config(k: &str, local_config: &[ApiInputConfig]) -> ApiInputConfig {
     .find(|&c| k == c.arg_name.as_ref().unwrap());
 
   match (global, local) {
-    (None, None) => abort!(k, format!("Can't find '{}' configuration", k)),
+    (None, None) => abort!(k, format!("Can't find '{k}' configuration")),
     (None, Some(l)) => l.to_owned(),
     (Some(g), None) => g.to_owned(),
     (Some(g), Some(l)) => ApiInputConfig {

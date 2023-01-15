@@ -82,16 +82,16 @@ impl Query for HTTPApi<'_> {
         None => Body::empty(),
       })
       .into_diagnostic()
-      .with_context(|| format!("Payload: {:?}", payload))
-      .with_context(|| format!("URL: {}", uri))
+      .with_context(|| format!("Payload: {payload:?}"))
+      .with_context(|| format!("URL: {uri}"))
       .context("HTTP request preparation failed.")?;
 
     let response = client
       .request(req)
       .await
       .into_diagnostic()
-      .with_context(|| format!("Payload: {:?}", payload))
-      .with_context(|| format!("URL: {}", uri))
+      .with_context(|| format!("Payload: {payload:?}"))
+      .with_context(|| format!("URL: {uri}"))
       .context("HTTP call fail")?;
     trace!("Response status: {}", response.status());
     // {
@@ -107,7 +107,7 @@ impl Query for HTTPApi<'_> {
       let body = aggregate(response)
         .await
         .into_diagnostic()
-        .with_context(|| format!("URL: {}", uri))
+        .with_context(|| format!("URL: {uri}"))
         .context("Can't read the HTTP response")?;
 
       if !body.has_remaining() {
@@ -149,7 +149,7 @@ impl Query for HTTPApi<'_> {
       aggregate(response)
         .await
         .into_diagnostic()
-        .with_context(|| format!("URL: {}", uri))
+        .with_context(|| format!("URL: {uri}"))
         .wrap_err("Can't read the HTTP error response")?
         .reader()
         .read_to_string(&mut error_body)
@@ -161,7 +161,7 @@ impl Query for HTTPApi<'_> {
       }
       Err(ApiError::from_http_status(status, self.auth))
         .wrap_err(error_body)
-        .wrap_err_with(|| format!("URL: {}", uri))
+        .wrap_err_with(|| format!("URL: {uri}"))
         .wrap_err(if message.is_empty() {
           "Unexpected HTTP Status Code".to_string()
         } else {
@@ -206,16 +206,16 @@ impl Query for HTTPApi<'_> {
         None => Body::empty(),
       })
       .into_diagnostic()
-      .with_context(|| format!("Payload: {:?}", payload))
-      .with_context(|| format!("URL: {}", uri))
+      .with_context(|| format!("Payload: {payload:?}"))
+      .with_context(|| format!("URL: {uri}"))
       .context("HTTP request preparation failed.")?;
 
     let mut response = client
       .request(req)
       .await
       .into_diagnostic()
-      .with_context(|| format!("Payload: {:?}", payload))
-      .with_context(|| format!("URL: {}", uri))
+      .with_context(|| format!("Payload: {payload:?}"))
+      .with_context(|| format!("URL: {uri}"))
       .context("HTTP call fail")?;
     trace!("Response status: {}", response.status());
     let bar = ProgressBar::new_spinner();
@@ -256,7 +256,7 @@ impl Query for HTTPApi<'_> {
         while let Some(chunk) = response.data().await {
           let chunk = chunk
             .into_diagnostic()
-            .with_context(|| format!("URL: {}", uri))?;
+            .with_context(|| format!("URL: {uri}"))?;
           bar.inc(chunk.len().try_into().into_diagnostic()?);
           file
             .write_all(&chunk)
@@ -268,7 +268,7 @@ impl Query for HTTPApi<'_> {
         while let Some(chunk) = response.data().await {
           let chunk = chunk
             .into_diagnostic()
-            .with_context(|| format!("URL: {}", uri))?;
+            .with_context(|| format!("URL: {uri}"))?;
           bar.inc(chunk.len().try_into().into_diagnostic()?);
           stdout()
             .write_all(&chunk)
@@ -292,7 +292,7 @@ impl Query for HTTPApi<'_> {
       aggregate(response)
         .await
         .into_diagnostic()
-        .with_context(|| format!("URL: {}", uri))
+        .with_context(|| format!("URL: {uri}"))
         .wrap_err("Can't read the HTTP error response")?
         .reader()
         .read_to_string(&mut error_body)
@@ -301,7 +301,7 @@ impl Query for HTTPApi<'_> {
 
       Err(ApiError::from_http_status(status, self.auth))
         .wrap_err(error_body)
-        .wrap_err_with(|| format!("URL: {}", uri))
+        .wrap_err_with(|| format!("URL: {uri}"))
         .wrap_err(if message.is_empty() {
           "Unexpected HTTP Status Code".to_string()
         } else {

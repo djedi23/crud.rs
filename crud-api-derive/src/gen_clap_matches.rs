@@ -11,7 +11,7 @@ fn match_endpoint(
 ) -> proc_macro2::TokenStream {
   let (paylay_decl, payload) = if let Some(payload_struct) = &ep.payload_struct {
     let payload_type = Ident::new(payload_struct, Span::call_site());
-    let error_context = format!("Can't read payload for '{}'", payload_struct);
+    let error_context = format!("Can't read payload for '{payload_struct}'");
     (
       quote! {
           let payload = <#payload_type>::from_clap_matches(#arg_ident)
@@ -26,7 +26,7 @@ fn match_endpoint(
 
   let (query_dec, query_args) = if let Some(query_struct) = &ep.query_struct {
     let query_type = Ident::new(query_struct, Span::call_site());
-    let error_context = format!("Can't read query for '{}'", query_struct);
+    let error_context = format!("Can't read query for '{query_struct}'");
     (
       quote! {
           let query = <#query_type>::from_clap_matches(#arg_ident)
@@ -40,7 +40,7 @@ fn match_endpoint(
   };
 
   let uri = &ep.route;
-  let urif = format!("{{}}{}", uri);
+  let urif = format!("{{}}{uri}");
   let ids: TokenStream = ids
     .iter()
     .map(|(ident, _dec)| quote!(, #ident=#ident))
@@ -164,7 +164,7 @@ fn argmatches_rec(
         };
         (quote!(#(#argmatches)*), var_do_query)
       } else {
-        let arg_ident = Ident::new(&format!("{}_arg", segment), Span::call_site());
+        let arg_ident = Ident::new(&format!("{segment}_arg"), Span::call_site());
         let argmatches = argmatches_rec(&node.route, Some(arg_ident.to_owned()), ids.to_owned());
         let do_query_when_id_matched: Vec<proc_macro2::TokenStream> = argmatches
           .iter()

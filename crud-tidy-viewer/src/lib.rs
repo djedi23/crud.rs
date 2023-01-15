@@ -96,7 +96,7 @@ pub fn display_table(rdr: &Vec<Vec<String>>, config: TableConfig) {
 
   let rows_remaining: usize = rows_in_file - rows;
   let ellipsis = '\u{2026}'.to_string();
-  let row_remaining_text: String = format!("{} with {} more rows", ellipsis, rows_remaining);
+  let row_remaining_text: String = format!("{ellipsis} with {rows_remaining} more rows");
 
   // csv gets records in rows. This makes them cols
   let mut v: Vec<Vec<&str>> = Vec::new(); //vec![vec!["#"; rows as usize]; cols as usize];
@@ -111,7 +111,7 @@ pub fn display_table(rdr: &Vec<Vec<String>>, config: TableConfig) {
 
   if config.debug_mode {
     println!("{:?}", "v");
-    println!("{:?}", v);
+    println!("{v:?}");
   }
 
   if config.debug_mode {
@@ -121,7 +121,7 @@ pub fn display_table(rdr: &Vec<Vec<String>>, config: TableConfig) {
       vec_datatypes.push(datatype::get_col_data_type(column))
     }
     println!("{:?}", "vec_datatypes");
-    println!("{:?}", vec_datatypes);
+    println!("{vec_datatypes:?}");
   }
 
   // vector of formatted values
@@ -139,9 +139,9 @@ pub fn display_table(rdr: &Vec<Vec<String>>, config: TableConfig) {
 
   if config.debug_mode {
     println!("{:?}", "Transposed Vector of Elements");
-    println!("{:?}", v);
+    println!("{v:?}");
     println!("{:?}", "Formatted: Vector of Elements");
-    println!("{:?}", vf);
+    println!("{vf:?}");
   }
 
   //  println!();

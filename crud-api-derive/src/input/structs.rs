@@ -131,7 +131,7 @@ pub(crate) fn field_quote(
   let raw_name = field.ident.as_ref().unwrap().to_string();
   let ty = strip_type(&field.ty);
   let name = if let Some(prefix) = &prefix {
-    format!("{}-{}", prefix, raw_name).to_lowercase()
+    format!("{prefix}-{raw_name}").to_lowercase()
   } else {
     raw_name.to_owned()
   };
@@ -143,7 +143,7 @@ pub(crate) fn field_quote(
   let long = {
     let l = field.long.as_ref().unwrap_or(&raw_name);
     let l = if let Some(prefix) = prefix {
-      format!("{}-{}", prefix, l).to_lowercase()
+      format!("{prefix}-{l}").to_lowercase()
     } else {
       l.to_string()
     };
@@ -165,7 +165,7 @@ pub(crate) fn field_quote(
   };
   let help = if let Some(h) = &field.help {
     let h = if is_option(&field.ty) {
-      format!("(option) {}", h)
+      format!("(option) {h}")
     } else {
       h.to_string()
     };
@@ -175,7 +175,7 @@ pub(crate) fn field_quote(
   };
   let long_help = if let Some(h) = &field.long_help {
     let h = if is_option(&field.ty) {
-      format!("(option) {}", h)
+      format!("(option) {h}")
     } else {
       h.to_string()
     };
@@ -221,7 +221,7 @@ fn field_matched_value(field: &ApiInputField, prefix: Option<String>) -> TokenSt
   let name = field.ident.as_ref().unwrap();
   let ty = strip_type(&field.ty);
   let sname = if let Some(prefix) = prefix {
-    format!("{}-{}", prefix, name).to_lowercase()
+    format!("{prefix}-{name}").to_lowercase()
   } else {
     name.to_string()
   };

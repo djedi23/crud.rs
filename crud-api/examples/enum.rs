@@ -69,7 +69,7 @@ impl Default for Enum {
 #[tokio::main]
 async fn main() -> Result<()> {
   let e = Enum::A;
-  println!("{:?}", e);
+  println!("{e:?}");
 
   R::run().await
   //  Ok(())

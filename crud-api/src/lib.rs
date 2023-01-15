@@ -262,7 +262,7 @@ pub trait Api {
     };
 
     if let Some(out) = out {
-      println!("{}", out);
+      println!("{out}");
     }
     Ok(())
   }
@@ -333,7 +333,7 @@ pub trait Api {
       }
     };
     if let Some(out) = out {
-      println!("{}", out);
+      println!("{out}");
     }
     Ok(())
   }

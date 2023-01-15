@@ -39,7 +39,7 @@ impl FromStr for OutputFormat {
       "csv" => Ok(OutputFormat::Csv),
       #[cfg(feature = "csv")]
       "tsv" => Ok(OutputFormat::Tsv),
-      _ => Err(format!("Invalid variant: {}", s)),
+      _ => Err(format!("Invalid variant: {s}")),
     }
   }
 }
@@ -112,7 +112,7 @@ pub fn clap_match_input_from_file<T: DeserializeOwned>(argmatches: &ArgMatches) 
       let file = File::open(filename).into_diagnostic()?;
       serde_json::from_reader(BufReader::new(file))
         .map_err(ApiError::from)
-        .with_context(|| format!("Can't read JSON from file '{}'", filename))?
+        .with_context(|| format!("Can't read JSON from file '{filename}'"))?
     })
   } else {
     Ok(None)
