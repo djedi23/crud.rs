@@ -25,15 +25,14 @@ const AUTH_TOKEN_SETTING: &str = "auth_token";
 
 impl CrudAuth for Auth {
   fn clap_auth(&self, app: Command) -> Command {
-    let app = app.arg(
+    app.arg(
       Arg::new(AUTH_TOKEN_ARG)
         .short('t')
         .long("auth-token")
         .action(ArgAction::Set)
         .help("Authorization token")
         .help_heading("Configuration"),
-    );
-    app
+    )
   }
 
   fn clap_matches(&mut self, matches: &ArgMatches, _app: &mut Command, settings: &Config) {
