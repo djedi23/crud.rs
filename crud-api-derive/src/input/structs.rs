@@ -46,8 +46,8 @@ pub(crate) fn derive_struct_decl(
       ) {
         let input: ApiInput = input_from_type.clone().into();
         let prefix = match &prefix {
-          Some(prefix) => format!("{}-{}", prefix, input.ident),
-          None => input.ident.to_string(),
+          Some(prefix) => format!("{}-{}", prefix, f.ident.as_ref().unwrap()),
+          None => f.ident.clone().unwrap().to_string(),
         };
         match &input.data {
           darling::ast::Data::Struct(fields) => derive_struct_decl(
@@ -94,8 +94,8 @@ pub(crate) fn derive_struct_match(
         let fname = f.ident.as_ref().unwrap();
         let input: ApiInput = input_from_type.clone().into();
         let prefix = Some(match &prefix {
-          Some(prefix) => format!("{}-{}", prefix, input.ident),
-          None => input.ident.to_string(),
+          Some(prefix) => format!("{}-{}", prefix, f.ident.as_ref().unwrap()),
+          None => f.ident.clone().unwrap().to_string(),
         });
         let struct_quote = match &input.data {
           darling::ast::Data::Struct(fields) => derive_struct_match(&input.ident, prefix, fields),
