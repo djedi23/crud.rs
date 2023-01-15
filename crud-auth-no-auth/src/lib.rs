@@ -1,8 +1,7 @@
-//! ## Crud no auth 
+//! ## Crud no auth
 //!
 //! Authentification trait implementation for [crud-api](../crud-api): no authentification.
 //!
-
 
 use clap::{ArgMatches, Command};
 use config::Config;

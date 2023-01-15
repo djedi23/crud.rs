@@ -1,9 +1,8 @@
 //! # Crud Api Derive
-//! 
+//!
 //! Derive implementation for `Crud`.
-//! 
+//!
 //! See [`crud`](../crud) crate.
-
 
 mod crud;
 use crud::crud_expension;
