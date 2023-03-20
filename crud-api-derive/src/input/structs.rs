@@ -44,6 +44,7 @@ pub(crate) fn derive_struct_decl(
         }
         .to_string(),
       ) {
+        // Declare nested types
         let input: ApiInput = input_from_type.clone().into();
         let prefix = match &prefix {
           Some(prefix) => format!("{}-{}", prefix, f.ident.as_ref().unwrap()),
@@ -135,8 +136,13 @@ pub(crate) fn field_quote(
   } else {
     raw_name.to_owned()
   };
+
+  let ty_string = quote!(#ty).to_string();
+  let is_bool = ty_string.eq("bool");
   let arg_action = if is_vec(&field.ty) || is_option_vec(&field.ty) {
     quote!(clap::ArgAction::Append)
+  } else if is_bool && is_option(&field.ty) {
+    quote!(clap::ArgAction::SetTrue)
   } else {
     quote!(clap::ArgAction::Set)
   };
@@ -202,7 +208,7 @@ pub(crate) fn field_quote(
   };
   let num_args = if let Some(num_args) = &field.num_args {
     quote!(.num_args(#num_args))
-  } else if is_vec(&field.ty) || is_option_vec(&field.ty) {
+  } else if is_vec(&field.ty) || is_option_vec(&field.ty) || is_bool {
     quote!()
   } else {
     quote!(.num_args(clap::builder::ValueRange::SINGLE))
@@ -240,7 +246,11 @@ fn field_matched_value(field: &ApiInputField, prefix: Option<String>) -> TokenSt
   } else {
     let value = quote!(matches.get_one::<#ty>(#sname).cloned());
     if is_option(&field.ty) {
-      quote!(#name : #value)
+      if quote!(#ty).to_string().eq("bool") {
+        quote!(#name : if let Some(false) = #value {None} else { #value })
+      } else {
+        quote!(#name : #value)
+      }
     } else {
       quote!(#name : #value.unwrap())
     }
