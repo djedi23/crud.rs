@@ -11,7 +11,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use log::trace;
 use miette::{IntoDiagnostic, Result, WrapErr};
 use serde::{de::DeserializeOwned, Serialize};
-use std::{collections::HashMap, fmt::Debug, io::Read, path::Path};
+use std::{collections::HashMap, fmt::Debug, io::Read, path::Path, time::Duration};
 use tokio::{
   fs::{create_dir_all, File},
   io::{stdout, AsyncWriteExt},
@@ -121,7 +121,6 @@ impl Query for HTTPApi<'_> {
             .read_to_string(&mut buffer)
             .into_diagnostic()
             .wrap_err("Can't read error as string")?;
-          println!("{}", buffer);
           let result: R = serde_json::from_str(&buffer)
             .into_diagnostic()
             .context("Can't deserialize the response")?;
@@ -219,10 +218,11 @@ impl Query for HTTPApi<'_> {
       .context("HTTP call fail")?;
     trace!("Response status: {}", response.status());
     let bar = ProgressBar::new_spinner();
-    bar.enable_steady_tick(150);
+    bar.enable_steady_tick(Duration::from_millis(150));
     bar.set_style(
       ProgressStyle::default_spinner()
         .template("{spinner:.blue} {msg} {bytes:>12} @ {bytes_per_sec:15} ({elapsed})")
+        .into_diagnostic()?
         .tick_strings(&[
           "▹▹▹▹▹",
           "▸▹▹▹▹",

@@ -22,7 +22,7 @@ pub(crate) fn strip_var(segment: &str) -> Option<&str> {
 }
 
 /// Generate the '--format' argument if needed.
-fn output_format(ep: &Vec<Endpoint>) -> proc_macro2::TokenStream {
+fn output_format(ep: &[Endpoint]) -> proc_macro2::TokenStream {
   if ep
     .iter()
     .any(|ep| !ep.result_is_stream && !ep.cli_no_output)

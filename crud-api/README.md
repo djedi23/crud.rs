@@ -26,7 +26,7 @@ clap = "4.0"
 crud-api = {version = "0.1", path="../crud/crud-api", default-features=false, features=["toml","json","yaml"]}
 crud-auth = {version = "0.1", path="../crud/crud-auth"}
 crud-auth-bearer = {version = "0.1", path="../crud/crud-auth-bearer"}
-hyper = "0.14"
+hyper = { version = "0.14", features = ["client","http1"] }
 hyper-tls = "0.5"
 miette = { version = "5.2", features = ["fancy"] }
 tokio = { version = "1", features = ["full"] }

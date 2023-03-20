@@ -15,8 +15,8 @@ crud-api-derive = {version = "0.1", path="../crud-api-derive"}
 crud-tidy-viewer = {version = "0.1", path="../crud-tidy-viewer"}
 crud-auth = {version = "0.1", path="../crud-auth"}
 
-clap = { version = "4.0", features = ["env","unicode","wrap_help","cargo"] }
-clap_complete = "4.0"
+clap = { version = "4.1", features = ["env","unicode","wrap_help","cargo"] }
+clap_complete = "4.1"
 config = "0.13"
 directories = "4.0"
 log = "^0.4"
@@ -25,17 +25,17 @@ dotenv = "0.15"
 
 
 async-trait = "0.1.51"
-hyper = { version = "0.14", features = ["full"] }
+hyper = { version = "0.14", features = ["client","http1"] }
 hyper-tls = { version = "0.5" }
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0.73"
 serde = { version = "1.0", features = ["derive"] }
-toml = "0.5"
-serde_yaml = {version= "0.8.24", optional=true}
+toml = "0.7"
+serde_yaml = {version= "0.9", optional=true}
 csv = {version="1.1.6", optional=true}
-serde_qs = "0.9.2"
-indicatif = "0.16.2"
-miette = { version = "5.1.1", features = ["fancy"] }
+serde_qs = "0.12"
+indicatif = "0.17"
+miette = { version = "5.2", features = ["fancy"] }
 thiserror = "1.0.31"
 owo-colors = "3.4.0"
 regex = "1.6.0"
@@ -48,7 +48,7 @@ openssl = { version = "0.10", features = ["vendored"] }
 
 
 [features]
-default=["csv","yaml","json","toml"]
+default=["csv", "yaml", "json", "toml"]
 csv= ["dep:csv"]
 dump-derives=["crud-api-derive/dump-derives"]
 yaml= ["dep:serde_yaml"]
