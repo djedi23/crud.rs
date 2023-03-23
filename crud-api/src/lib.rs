@@ -171,6 +171,7 @@ pub use formats::{
 use miette::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{fmt::Debug, marker::Sized};
+pub use upload::UploadBase64;
 
 extern crate crud_api_derive;
 #[doc(hidden)]
@@ -184,6 +185,8 @@ mod formats;
 pub mod http;
 #[doc(hidden)]
 pub mod settings;
+#[doc(hidden)]
+mod upload;
 
 #[doc(hidden)]
 pub struct ApiInputOptions {
