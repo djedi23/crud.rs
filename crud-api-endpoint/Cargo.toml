@@ -1,6 +1,6 @@
 [package]
 name = "crud-api-endpoint"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description= "CLI generator for your API. Enpoint description"
 license = "MIT"
@@ -12,12 +12,12 @@ repository= "https://github.com/djedi23/crud.rs"
 [dependencies]
 syn = {version="1.0", features=["extra-traits"]}
 derive_builder = "0.12"
-darling = "0.14.1"
-proc-macro-error = "1.0.4"
-proc-macro2 = "1.0.32"
+darling = "0.14"
+proc-macro-error = "1.0"
+proc-macro2 = "1.0"
 quote = "1.0"
-lazy_static = "1.4.0"
-serde_json = "1.0.73"
+lazy_static = "1.4"
+serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 
 
@@ -26,8 +26,8 @@ serde = { version = "1.0", features = ["derive"] }
 crud-api = {version = "0.1", path="../crud-api"}
 crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
 crud-auth = {version = "0.1", path="../crud-auth"}
-clap = { version = "4.0", features = ["color","cargo","env","suggestions","unicode"] }
+clap = { version = "4.2", features = ["color","cargo","env","suggestions","unicode"] }
 log = "^0.4"
 pretty_env_logger = "^0.4"
-miette = { version = "5.1.1", features = ["fancy"] }
+miette = { version = "5.7", features = ["fancy"] }
 openssl = { version = "0.10", features = ["vendored"] }

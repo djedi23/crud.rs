@@ -1,6 +1,6 @@
 [package]
 name = "crud-api"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description= "CLI generator for your API."
 license = "MIT"
@@ -15,28 +15,27 @@ crud-api-derive = {version = "0.1", path="../crud-api-derive"}
 crud-tidy-viewer = {version = "0.1", path="../crud-tidy-viewer"}
 crud-auth = {version = "0.1", path="../crud-auth"}
 
-clap = { version = "4.1", features = ["env","unicode","wrap_help","cargo"] }
-clap_complete = "4.1"
+clap = { version = "4.2", features = ["env","unicode","wrap_help","cargo"] }
+clap_complete = "4.2"
 config = "0.13"
-directories = "4.0"
+directories = "5.0"
 log = "^0.4"
 pretty_env_logger = "^0.4"
-dotenv = "0.15"
 
 
-async-trait = "0.1.51"
+async-trait = "0.1"
 hyper = { version = "0.14", features = ["client","http1"] }
 hyper-tls = { version = "0.5" }
 tokio = { version = "1", features = ["full"] }
-serde_json = "1.0.73"
+serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.7"
 serde_yaml = {version= "0.9", optional=true}
-csv = {version="1.1.6", optional=true}
+csv = {version="1.1", optional=true}
 serde_qs = "0.12"
 indicatif = "0.17"
-miette = { version = "5.2", features = ["fancy"] }
-thiserror = "1.0.31"
+miette = { version = "5.7", features = ["fancy"] }
+thiserror = "1.0"
 owo-colors = "3.4.0"
 regex = "1.6.0"
 base64 = "0.21.0"
@@ -44,8 +43,8 @@ base64 = "0.21.0"
 [dev-dependencies]
 crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
 crud-auth-bearer = {version = "0.1", path="../crud-auth-bearer"}
-chrono = { version = "0.4.19", features = ["serde"] }
-openssl = { version = "0.10", features = ["vendored"] }
+chrono = { version = "0.4", default-features = false, features = ["std","serde"] }
+openssl = { version = "0.10",  features = ["vendored"] }
 
 
 [features]
