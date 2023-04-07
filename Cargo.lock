@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "crud-api-derive"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "crud-api-endpoint",
  "darling",
@@ -464,7 +464,7 @@ dependencies = [
 
 [[package]]
 name = "crud-derive"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "crud-api-endpoint",
  "darling",
