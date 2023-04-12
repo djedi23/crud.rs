@@ -15,7 +15,7 @@ use darling::FromMeta;
 use derive_builder::Builder;
 pub use input::{ApiInputFieldSerde, ApiInputSerde, ApiInputVariantSerde, DataSerde};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs::File, io::BufReader};
+use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 pub use types::VecStringWrapper;
 
 #[macro_use]
@@ -160,18 +160,12 @@ pub struct EpNode {
   pub route: Emap,
 }
 
-// lazy_static! {
-//   static ref ENDPOINT: Arc<Mutex<Emap>> = {
-//     println!("*******************");
-//     let m = HashMap::new();
-//     Arc::new(Mutex::new(m))
-//   };
-// }
+//const TMP: &str = "endpoints.json";
 
-const TMP: &str = "/tmp/crud_api_endpoints.json";
-
-fn endpoint_filename() -> String {
-  format!("{}-{}", TMP, std::process::id())
+fn endpoint_filename() -> PathBuf {
+  let mut dir = scratch::path("crud_api");
+  dir.push(format!("endpoints-{}.json", std::process::id()));
+  dir
 }
 
 #[derive(Default, Serialize, Deserialize)]
@@ -184,8 +178,7 @@ fn load_store() -> TmpStore {
   match File::open(endpoint_filename()) {
     Ok(file) => {
       let reader = BufReader::new(file);
-      let u: TmpStore =
-        serde_json::from_reader(reader).expect("Error reading /tmp/crud_api_endpoints.json.");
+      let u: TmpStore = serde_json::from_reader(reader).expect("Error reading endpoints.json.");
       u
     }
     Err(_) => TmpStore::default(),
@@ -259,10 +252,6 @@ fn insert_endpoint(map: Emap, ep: &Endpoint, mut segments: Vec<&str>) -> Emap {
   } else {
     map
   }
-}
-
-pub fn cleanup() {
-  std::fs::remove_file(endpoint_filename()).unwrap_or_default()
 }
 
 #[cfg(test)]
