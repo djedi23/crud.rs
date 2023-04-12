@@ -131,14 +131,8 @@ pub(crate) fn field_quote(
 ) -> TokenStream {
   let raw_name = field.ident.as_ref().unwrap().to_string();
   let ty = strip_type(&field.ty);
-  let name = if let Some(prefix) = &prefix {
-    format!("{prefix}-{raw_name}").to_lowercase()
-  } else {
-    raw_name.to_owned()
-  };
 
-  let ty_string = quote!(#ty).to_string();
-  let is_bool = ty_string.eq("bool");
+  let is_bool = quote!(#ty).to_string().eq("bool");
   let arg_action = if is_vec(&field.ty) || is_option_vec(&field.ty) {
     quote!(clap::ArgAction::Append)
   } else if is_bool && is_option(&field.ty) {
@@ -148,7 +142,7 @@ pub(crate) fn field_quote(
   };
   let long = {
     let l = field.long.as_ref().unwrap_or(&raw_name);
-    let l = if let Some(prefix) = prefix {
+    let l = if let Some(prefix) = &prefix {
       format!("{prefix}-{l}").to_lowercase()
     } else {
       l.to_string()
@@ -212,6 +206,12 @@ pub(crate) fn field_quote(
     quote!()
   } else {
     quote!(.num_args(clap::builder::ValueRange::SINGLE))
+  };
+
+  let name = if let Some(prefix) = prefix {
+    format!("{prefix}-{raw_name}").to_lowercase()
+  } else {
+    raw_name
   };
 
   quote! {

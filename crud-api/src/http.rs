@@ -125,7 +125,7 @@ impl Query for HTTPApi<'_> {
             .read_to_string(&mut buffer)
             .into_diagnostic()
             .wrap_err("Can't read error as string")?;
-          //          println!("{}", buffer);
+          println!("{}", buffer);
           let result: R = serde_json::from_str(&buffer)
             .into_diagnostic()
             .context("Can't deserialize the response")?;

@@ -49,8 +49,10 @@ struct Bstruct {
 #[serde(tag = "type")]
 #[api(no_input_file)]
 #[allow(dead_code)]
+#[derive(Default)]
 enum Enum {
   #[api(no_short)]
+  #[default]
   A,
   #[api(no_short)]
   B(Bstruct),
@@ -60,11 +62,7 @@ enum Enum {
   // D { d: u32, dd: String },
 }
 
-impl Default for Enum {
-  fn default() -> Self {
-    Enum::A
-  }
-}
+
 
 #[tokio::main]
 async fn main() -> Result<()> {
