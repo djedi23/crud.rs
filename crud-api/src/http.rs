@@ -22,7 +22,7 @@ pub struct HTTPApi<'a> {
   method: Method,
   ok_status: StatusCode,
   ko_status: &'a HashMap<StatusCode, String>,
-  auth: &'a (dyn CrudAuth + Send + Sync),
+  auth: Option<&'a (dyn CrudAuth + Send + Sync)>,
 }
 
 impl<'a> HTTPApi<'a> {
@@ -31,7 +31,7 @@ impl<'a> HTTPApi<'a> {
     method: Method,
     ok_status: StatusCode,
     ko_status: &'a HashMap<StatusCode, String>,
-    auth: &'a (dyn CrudAuth + Send + Sync),
+    auth: Option<&'a (dyn CrudAuth + Send + Sync)>,
   ) -> HTTPApi<'a> {
     HTTPApi {
       uri,
@@ -63,9 +63,13 @@ impl Query for HTTPApi<'_> {
     }
     let req = Request::builder().method(&self.method).uri(&uri);
     trace!("Request {} to {}", self.method, uri);
-    let (header_key, header_value) = self.auth.auth_header();
-    let req = if !header_key.is_empty() {
-      req.header(header_key, header_value)
+    let req = if let Some(auth) = self.auth {
+      let (header_key, header_value) = auth.auth_header();
+      if !header_key.is_empty() {
+        req.header(header_key, header_value)
+      } else {
+        req
+      }
     } else {
       req
     };
@@ -187,9 +191,13 @@ impl Query for HTTPApi<'_> {
     }
     let req = Request::builder().method(&self.method).uri(&uri);
     trace!("Request {} to {}", self.method, uri);
-    let (header_key, header_value) = self.auth.auth_header();
-    let req = if !header_key.is_empty() {
-      req.header(header_key, header_value)
+    let req = if let Some(auth) = self.auth {
+      let (header_key, header_value) = auth.auth_header();
+      if !header_key.is_empty() {
+        req.header(header_key, header_value)
+      } else {
+        req
+      }
     } else {
       req
     };

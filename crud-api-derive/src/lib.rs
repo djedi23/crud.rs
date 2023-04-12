@@ -39,7 +39,6 @@ pub fn api_run_macro_derive(input: TokenStream) -> TokenStream {
   let base_url = &api.infos.base_url;
   let matches = argmatches();
 
-
   let out = quote! {
       impl #name {
 	 async fn run() -> miette::Result<()> {

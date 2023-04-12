@@ -59,6 +59,8 @@ pub struct Endpoint {
   /// This flag disables the `--format` arguments.
   #[darling(rename = "stream")]
   pub result_is_stream: bool,
+  /// This endpoint is not authenticated
+  pub no_auth: bool,
 
   /// clap route separated by slash (`/`)
   ///
@@ -137,6 +139,7 @@ impl Default for Endpoint {
       result_struct: Default::default(),
       result_multiple: Default::default(),
       result_is_stream: false,
+      no_auth: false,
       cli_route: Default::default(),
       cli_help: Default::default(),
       cli_long_help: Default::default(),
@@ -284,7 +287,7 @@ mod tests {
     segments.reverse();
     let map = HashMap::new();
     let result = insert_endpoint(map, &ep, segments);
-    assert_eq!(serde_json::to_string(&result).unwrap(), "{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
+    assert_eq!(serde_json::to_string(&result).unwrap(), "{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
   }
 
   #[test]
@@ -309,7 +312,7 @@ mod tests {
     segments.reverse();
     let result = insert_endpoint(map, &ep, segments);
 
-    assert_eq!(serde_json::to_string(&result).unwrap(), "{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
+    assert_eq!(serde_json::to_string(&result).unwrap(), "{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
   }
 
   #[test]
@@ -342,7 +345,7 @@ mod tests {
     let mut segments: Vec<&str> = ep.cli_route.split('/').collect();
     segments.reverse();
     let map = insert_endpoint(map, &ep, segments);
-    assert_eq!(serde_json::to_string(&map).unwrap(),"{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{\"user\":{\"endpoint\":[{\"route\":\"/post/user\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"cli_route\":\"/post/user\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}");
+    assert_eq!(serde_json::to_string(&map).unwrap(),"{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{\"user\":{\"endpoint\":[{\"route\":\"/post/user\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"no_auth\":false,\"cli_route\":\"/post/user\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}");
   }
 
   #[test]
@@ -357,7 +360,7 @@ mod tests {
     segments.reverse();
     let map = insert_endpoint(map, &ep, segments);
 
-    assert_eq!(serde_json::to_string(&map).unwrap(), "{\"post\":{\"endpoint\":[],\"route\":{\"comments\":{\"endpoint\":[],\"route\":{\"replies\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"cli_route\":\"/post/comments/replies\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}}}");
+    assert_eq!(serde_json::to_string(&map).unwrap(), "{\"post\":{\"endpoint\":[],\"route\":{\"comments\":{\"endpoint\":[],\"route\":{\"replies\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"no_auth\":false,\"cli_route\":\"/post/comments/replies\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}}}");
   }
 
   #[test]

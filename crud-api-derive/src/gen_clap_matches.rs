@@ -88,12 +88,18 @@ fn match_endpoint(
     }
   };
 
+  let auth = if ep.no_auth {
+    quote!(None)
+  } else {
+    quote!(Some(&auth))
+  };
+
   let query_and_print = if ep.result_is_stream {
     quote!(crud_api::http::HTTPApi::new(format!(#urif,base_url #ids),
 				     hyper::Method::#method,
 				     hyper::StatusCode::#status,
 				     #ko_status_map,
-				     &auth)
+				     #auth)
 	   .stream(#payload,
 		   #query_args,
 		   #arg_ident.get_one::<String>("output_file").cloned()).await?;
@@ -105,7 +111,7 @@ fn match_endpoint(
 				      hyper::Method::#method,
 				      hyper::StatusCode::#status,
 				      #ko_status_map,
-				      &auth)
+				      #auth)
 	    .query(#payload,#query_args).await?;
         #result_output
     )

@@ -25,11 +25,18 @@ pub enum ApiError {
 }
 
 impl ApiError {
-  pub fn from_http_status(status: StatusCode, auth: &(dyn CrudAuth + Send + Sync)) -> ApiError {
+  pub fn from_http_status(
+    status: StatusCode,
+    auth: Option<&(dyn CrudAuth + Send + Sync)>,
+  ) -> ApiError {
     match status {
       StatusCode::UNAUTHORIZED => ApiError::HTTPUnauthorizedError {
         status,
-        help: auth.error_help_message(),
+        help: if let Some(auth) = auth {
+          auth.error_help_message()
+        } else {
+          "Check your authentification".to_string()
+        },
       },
       _ => ApiError::HTTPStatusError { status },
     }
