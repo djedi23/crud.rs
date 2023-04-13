@@ -88,6 +88,25 @@ fn match_endpoint(
     }
   };
 
+  let extra_headers = if ep.extra_header.is_empty() {
+    quote!()
+  } else {
+    let eh: Vec<proc_macro2::TokenStream> = ep
+      .extra_header
+      .iter()
+      .map(|h| {
+        let key = &h.key;
+        let value = &h.value;
+        quote!(extra_headers.push(crud_api::http::Header{key:#key, value:#value});)
+      })
+      .collect();
+
+    quote!{
+	  let mut extra_headers = extra_headers.clone();
+	  #(#eh)*
+      }
+  };
+
   let auth = if ep.no_auth {
     quote!(None)
   } else {
@@ -99,7 +118,8 @@ fn match_endpoint(
 				     hyper::Method::#method,
 				     hyper::StatusCode::#status,
 				     #ko_status_map,
-				     #auth)
+				     #auth,
+				     &extra_headers)
 	   .stream(#payload,
 		   #query_args,
 		   #arg_ident.get_one::<String>("output_file").cloned()).await?;
@@ -111,7 +131,8 @@ fn match_endpoint(
 				      hyper::Method::#method,
 				      hyper::StatusCode::#status,
 				      #ko_status_map,
-				      #auth)
+				      #auth,
+				      &extra_headers)
 	    .query(#payload,#query_args).await?;
         #result_output
     )
@@ -120,6 +141,7 @@ fn match_endpoint(
   quote! {
       #query_dec
       #paylay_decl
+      #extra_headers
       #query_and_print
     }
 }

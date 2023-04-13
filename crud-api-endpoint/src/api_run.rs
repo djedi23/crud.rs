@@ -1,3 +1,4 @@
+use crate::Header;
 use darling::{FromDeriveInput, FromMeta};
 use syn::Ident;
 
@@ -86,6 +87,11 @@ pub struct ApiRun {
   pub infos: ApiInformation,
   /// Name of the struct derived by `ApiRun`.
   /// Used to implentent the `run` function.
+
+  /// Add extra header to all endpoints.
+  #[darling(default)]
+  #[darling(multiple)]
+  pub extra_header: Vec<Header>,
   #[doc(hidden)]
   pub ident: Ident,
   //  attrs: Vec<syn::Attribute>,

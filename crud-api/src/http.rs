@@ -23,6 +23,7 @@ pub struct HTTPApi<'a> {
   ok_status: StatusCode,
   ko_status: &'a HashMap<StatusCode, String>,
   auth: Option<&'a (dyn CrudAuth + Send + Sync)>,
+  headers: &'a Vec<Header<'a>>,
 }
 
 impl<'a> HTTPApi<'a> {
@@ -32,6 +33,7 @@ impl<'a> HTTPApi<'a> {
     ok_status: StatusCode,
     ko_status: &'a HashMap<StatusCode, String>,
     auth: Option<&'a (dyn CrudAuth + Send + Sync)>,
+    headers: &'a Vec<Header<'a>>,
   ) -> HTTPApi<'a> {
     HTTPApi {
       uri,
@@ -39,8 +41,15 @@ impl<'a> HTTPApi<'a> {
       ok_status,
       ko_status,
       auth,
+      headers,
     }
   }
+}
+
+#[derive(Clone)]
+pub struct Header<'a> {
+  pub key: &'a str,
+  pub value: &'a str,
 }
 
 fn get_client() -> Client<HttpsConnector<HttpConnector>> {
@@ -73,6 +82,11 @@ impl Query for HTTPApi<'_> {
     } else {
       req
     };
+    let mut req = req;
+    for Header { key, value } in self.headers.iter() {
+      req = req.header(*key, *value)
+    }
+
     let req = req
       .header("content-type", "application/json; charset=UTF-8")
       .body(match payload {
@@ -201,6 +215,10 @@ impl Query for HTTPApi<'_> {
     } else {
       req
     };
+    let mut req = req;
+    for Header { key, value } in self.headers.iter() {
+      req = req.header(*key, *value)
+    }
     let req = req
       .header("content-type", "application/json")
       .body(match payload {

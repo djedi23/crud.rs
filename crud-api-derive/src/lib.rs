@@ -39,11 +39,22 @@ pub fn api_run_macro_derive(input: TokenStream) -> TokenStream {
   let base_url = &api.infos.base_url;
   let matches = argmatches();
 
+  let eh: Vec<proc_macro2::TokenStream> = api
+    .extra_header
+    .iter()
+    .map(|h| {
+      let key = &h.key;
+      let value = &h.value;
+      quote!(crud_api::http::Header{key:#key, value:#value})
+    })
+    .collect();
+
   let out = quote! {
       impl #name {
 	 async fn run() -> miette::Result<()> {
 	     pretty_env_logger::init();
 	     let mut auth = Auth::default();
+	     let extra_headers: Vec<crud_api::http::Header> = vec![#(#eh),*];
 	     #settings
 	     #init_clap
 	     commands = auth.clap_auth(commands);
