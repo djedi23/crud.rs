@@ -88,6 +88,13 @@ fn match_endpoint(
     }
   };
 
+  let extra_action = if let Some(extra_action) = &ep.extra_action {
+    let action_function = Ident::new(extra_action, Span::call_site());
+    quote!(#action_function(&result, &settings)?;)
+  } else {
+    quote!()
+  };
+
   let extra_headers = if ep.extra_header.is_empty() {
     quote!()
   } else {
@@ -134,6 +141,7 @@ fn match_endpoint(
 				      #auth,
 				      &extra_headers)
 	    .query(#payload,#query_args).await?;
+	#extra_action
         #result_output
     )
   };

@@ -63,6 +63,11 @@ pub struct Endpoint {
   #[darling(default)]
   #[darling(multiple)]
   pub extra_header: Vec<Header>,
+  /// Action to run on the data returned by the http call.
+  /// The signature of the action is: (data:R, settings: &Config)-> Result<()>
+  /// where R is the struct returned by the api.
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub extra_action: Option<String>,
   /// This endpoint is not authenticated
   pub no_auth: bool,
 
@@ -150,6 +155,7 @@ impl Default for Endpoint {
       result_multiple: Default::default(),
       result_is_stream: false,
       extra_header: Default::default(),
+      extra_action: Default::default(),
       no_auth: false,
       cli_route: Default::default(),
       cli_help: Default::default(),
