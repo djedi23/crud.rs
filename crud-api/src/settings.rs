@@ -17,6 +17,10 @@ pub fn settings(
     let path = Path::new(proj_dirs.config_dir()).join("settings.toml");
     let path = path.to_str().unwrap();
     settings_builder = settings_builder.add_source(File::with_name(path).required(false));
+    settings_builder = settings_builder
+      .set_default("configuration_path", path)
+      .into_diagnostic()?;
+
     debug!("Try to load config file: {}", &path);
   }
   settings_builder = settings_builder.add_source(Environment::with_prefix(env_prefix));

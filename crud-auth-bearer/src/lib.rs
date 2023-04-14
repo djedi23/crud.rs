@@ -51,3 +51,27 @@ impl CrudAuth for Auth {
     format!("Use or check the `{}` argument.", "--auth-token".yellow())
   }
 }
+
+#[cfg(feature = "save_token")]
+impl Auth {
+  /// Save the token in the configuration file.
+  pub fn save_token(token: &str, settings: &Config) -> miette::Result<()> {
+    use miette::IntoDiagnostic;
+    use std::{fs, path::Path};
+    use toml_edit::{value, Document};
+
+    let config_path = settings
+      .get_string("configuration_path")
+      .into_diagnostic()?;
+    let config_str = fs::read_to_string(&config_path).unwrap_or_default();
+
+    let mut doc = config_str.parse::<Document>().into_diagnostic()?;
+    doc[AUTH_TOKEN_SETTING] = value(token);
+
+    let path = Path::new(&config_path).parent().unwrap();
+    fs::create_dir_all(path).into_diagnostic()?;
+    fs::write(config_path, doc.to_string()).into_diagnostic()?;
+
+    Ok(())
+  }
+}
