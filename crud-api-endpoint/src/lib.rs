@@ -70,6 +70,45 @@ pub struct Endpoint {
   pub extra_action: Option<String>,
   /// This endpoint is not authenticated
   pub no_auth: bool,
+  /// Transform result from this type.
+  ///
+  /// This type should implement `TryFrom` for `T` and `Vec<T>`.
+  ///
+  /// ```ignore
+  /// #[derive(Debug, Deserialize)]
+  /// struct ApiResult {
+  ///   status: String,
+  ///   detail: Option<String>,
+  ///   result: Option<Vec<MyStruct>>,
+  /// }
+  ///
+  /// impl TryFrom<ApiResult> for Vec<MyStruct> {
+  ///   type Error = String;
+  ///
+  ///   fn try_from(value: ApiResult) -> Result<Self, Self::Error> {
+  ///       // I don't check errors here...
+  ///       Ok(value.result.clone().unwrap_or_default())
+  ///   }
+  /// }
+  ///
+  /// impl TryFrom<ApiResult> for MyStruct {
+  ///   type Error = String;
+  ///
+  ///   fn try_from(value: ApiResult<MyStruct>) -> Result<Self, Self::Error> {
+  ///     if value.status == "ERR" {
+  ///       Err(value.detail.clone().unwrap_or_default())
+  ///     } else {
+  ///       let r = value.result.clone().unwrap_or_default();
+  ///       if r.is_empty() {
+  ///         Ok(MyStruct::default())
+  ///       } else {
+  ///         Ok(r[0].clone())
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  pub transform_from: Option<String>,
 
   /// clap route separated by slash (`/`)
   ///
@@ -157,6 +196,7 @@ impl Default for Endpoint {
       extra_header: Default::default(),
       extra_action: Default::default(),
       no_auth: false,
+      transform_from: Default::default(),
       cli_route: Default::default(),
       cli_help: Default::default(),
       cli_long_help: Default::default(),
@@ -179,8 +219,6 @@ pub struct EpNode {
   pub endpoint: Vec<Endpoint>,
   pub route: Emap,
 }
-
-//const TMP: &str = "endpoints.json";
 
 fn endpoint_filename() -> PathBuf {
   let mut dir = scratch::path("crud_api");
@@ -304,7 +342,7 @@ mod tests {
     segments.reverse();
     let map = HashMap::new();
     let result = insert_endpoint(map, &ep, segments);
-    assert_eq!(serde_json::to_string(&result).unwrap(), "{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
+    assert_eq!(serde_json::to_string(&result).unwrap(),"{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"transform_from\":null,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
   }
 
   #[test]
@@ -329,7 +367,7 @@ mod tests {
     segments.reverse();
     let result = insert_endpoint(map, &ep, segments);
 
-    assert_eq!(serde_json::to_string(&result).unwrap(), "{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
+    assert_eq!(serde_json::to_string(&result).unwrap(),"{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"transform_from\":null,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"transform_from\":null,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}");
   }
 
   #[test]
@@ -362,7 +400,7 @@ mod tests {
     let mut segments: Vec<&str> = ep.cli_route.split('/').collect();
     segments.reverse();
     let map = insert_endpoint(map, &ep, segments);
-    assert_eq!(serde_json::to_string(&map).unwrap(), "{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{\"user\":{\"endpoint\":[{\"route\":\"/post/user\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"cli_route\":\"/post/user\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}");
+    assert_eq!(serde_json::to_string(&map).unwrap(),"{\"post\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"transform_from\":null,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]},{\"route\":\"/post\",\"method\":\"POST\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"transform_from\":null,\"cli_route\":\"/post\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{\"user\":{\"endpoint\":[{\"route\":\"/post/user\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"transform_from\":null,\"cli_route\":\"/post/user\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}");
   }
 
   #[test]
@@ -377,7 +415,7 @@ mod tests {
     segments.reverse();
     let map = insert_endpoint(map, &ep, segments);
 
-    assert_eq!(serde_json::to_string(&map).unwrap(), "{\"post\":{\"endpoint\":[],\"route\":{\"comments\":{\"endpoint\":[],\"route\":{\"replies\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"cli_route\":\"/post/comments/replies\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}}}");
+    assert_eq!(serde_json::to_string(&map).unwrap(),"{\"post\":{\"endpoint\":[],\"route\":{\"comments\":{\"endpoint\":[],\"route\":{\"replies\":{\"endpoint\":[{\"route\":\"/post\",\"method\":\"GET\",\"result_ok_status\":\"OK\",\"result_ko_status\":[],\"result_multiple\":false,\"result_is_stream\":false,\"extra_header\":[],\"no_auth\":false,\"transform_from\":null,\"cli_route\":\"/post/comments/replies\",\"cli_no_output\":false,\"cli_force_output_format\":false,\"config\":[]}],\"route\":{}}}}}}}");
   }
 
   #[test]

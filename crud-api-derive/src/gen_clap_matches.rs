@@ -120,6 +120,13 @@ fn match_endpoint(
     quote!(Some(&auth))
   };
 
+  let transform_type = if let Some(transform_from) = &ep.transform_from {
+    let ty: syn::Type = syn::parse_str(transform_from).expect("Can't parse type in transform_from");
+    quote!(Some(std::marker::PhantomData::<#ty>))
+  } else {
+    quote!(None::<std::marker::PhantomData<crud_api::DummyTryFrom>>)
+  };
+
   let query_and_print = if ep.result_is_stream {
     quote!(crud_api::http::HTTPApi::new(format!(#urif,base_url #ids),
 				     hyper::Method::#method,
@@ -140,7 +147,7 @@ fn match_endpoint(
 				      #ko_status_map,
 				      #auth,
 				      &extra_headers)
-	    .query(#payload,#query_args).await?;
+	    .query(#payload, #query_args, #transform_type).await?;
 	#extra_action
         #result_output
     )

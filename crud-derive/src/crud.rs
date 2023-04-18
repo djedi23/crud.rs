@@ -167,11 +167,18 @@ pub(crate) fn crud_expension(ast: &DeriveInput) -> TokenStream {
   let update_payload = update_payload(&crud.ident, &crud.data);
   let replace_payload = replace_payload(&crud.ident, &crud.data);
   let table = table_impl(&crud.ident, &crud.data);
+  let ident = crud.ident;
   let out = quote! {
       #create_payload
       #update_payload
       #replace_payload
       #table
+      impl TryFrom<crud_api::DummyTryFrom> for #ident {
+	  type Error = String;
+	  fn try_from(_value: crud_api::DummyTryFrom) -> std::result::Result<Self, Self::Error> {
+	      Err(String::new())
+	  }
+      }
   };
   #[cfg(feature = "dump-derives")]
   println!("{}", out);

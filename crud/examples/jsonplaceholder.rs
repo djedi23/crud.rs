@@ -2,7 +2,7 @@ use crud::Crud;
 use crud_api::{Api, ApiInput, ApiRun, EmptyResponse, Query};
 use crud_auth::CrudAuth;
 use crud_auth_no_auth::Auth;
-use miette::{Context, IntoDiagnostic, Result};
+use miette::Result;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 

@@ -9,9 +9,11 @@ use hyper::{
 use hyper_tls::HttpsConnector;
 use indicatif::{ProgressBar, ProgressStyle};
 use log::trace;
-use miette::{IntoDiagnostic, Result, WrapErr};
+use miette::{miette, IntoDiagnostic, Result, WrapErr};
 use serde::{de::DeserializeOwned, Serialize};
-use std::{collections::HashMap, fmt::Debug, io::Read, path::Path, time::Duration};
+use std::{
+  collections::HashMap, fmt::Debug, io::Read, marker::PhantomData, path::Path, time::Duration,
+};
 use tokio::{
   fs::{create_dir_all, File},
   io::{stdout, AsyncWriteExt},
@@ -59,9 +61,15 @@ fn get_client() -> Client<HttpsConnector<HttpConnector>> {
 
 #[async_trait]
 impl Query for HTTPApi<'_> {
-  async fn query<P, R, Q>(&self, payload: Option<P>, query_args: Option<Q>) -> Result<R>
+  async fn query<P, T, R, Q>(
+    &self,
+    payload: Option<P>,
+    query_args: Option<Q>,
+    transform_from_type: Option<PhantomData<T>>,
+  ) -> Result<R>
   where
     P: Send + Serialize + Debug,
+    T: TryInto<R, Error = String> + DeserializeOwned + Send,
     R: Send + DeserializeOwned + Debug + Default,
     Q: Send + Serialize + Debug,
   {
@@ -140,16 +148,30 @@ impl Query for HTTPApi<'_> {
             .into_diagnostic()
             .wrap_err("Can't read error as string")?;
           println!("{}", buffer);
-          let result: R = serde_json::from_str(&buffer)
-            .into_diagnostic()
-            .context("Can't deserialize the response")?;
+          let result: R = if transform_from_type.is_some() {
+            let raw_result: T = serde_json::from_str(&buffer)
+              .into_diagnostic()
+              .context("Can't deserialize the response")?;
+            raw_result.try_into().map_err(|e| miette!("{}", e))?
+          } else {
+            serde_json::from_str(&buffer)
+              .into_diagnostic()
+              .context("Can't deserialize the response")?
+          };
           Ok(result)
         }
         #[cfg(not(feature = "debug-http"))]
         {
-          let result: R = serde_json::from_reader(body.reader())
-            .into_diagnostic()
-            .context("Can't deserialize the response")?;
+          let result: R = if transform_from_type.is_some() {
+            let raw_result: T = serde_json::from_reader(body.reader())
+              .into_diagnostic()
+              .context("Can't deserialize the response")?;
+            raw_result.try_into().map_err(|e| miette!("{}", e))?
+          } else {
+            serde_json::from_reader(body.reader())
+              .into_diagnostic()
+              .context("Can't deserialize the response")?
+          };
           Ok(result)
         }
       }

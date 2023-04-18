@@ -1,7 +1,7 @@
 use crud_api::{Api, ApiInput, ApiRun, Query};
 use crud_auth::CrudAuth;
 use crud_auth_no_auth::Auth;
-use miette::{Context, IntoDiagnostic, Result};
+use miette::Result;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
@@ -61,8 +61,6 @@ enum Enum {
   // #[api(no_short)]
   // D { d: u32, dd: String },
 }
-
-
 
 #[tokio::main]
 async fn main() -> Result<()> {

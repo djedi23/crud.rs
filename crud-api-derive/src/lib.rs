@@ -52,6 +52,7 @@ pub fn api_run_macro_derive(input: TokenStream) -> TokenStream {
   let out = quote! {
       impl #name {
 	 async fn run() -> miette::Result<()> {
+	     use miette::{IntoDiagnostic, WrapErr};
 	     pretty_env_logger::init();
 	     let mut auth = Auth::default();
 	     let extra_headers: Vec<crud_api::http::Header> = vec![#(#eh),*];

@@ -168,10 +168,13 @@ use formats::OutputFormat;
 pub use formats::{
   clap_match_input_from_file, clap_match_output_format, clap_match_template, clap_output_format_decl,
 };
-use miette::Result;
+use miette::{IntoDiagnostic, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{fmt::Debug, marker::Sized};
 pub use upload::UploadBase64;
+use std::{
+  fmt::Debug,
+  marker::{PhantomData, Sized},
+};
 
 extern crate crud_api_derive;
 #[doc(hidden)]
@@ -205,9 +208,15 @@ pub trait ApiInput {
 #[doc(hidden)]
 #[async_trait]
 pub trait Query {
-  async fn query<P, R, Q>(&self, payload: Option<P>, argument: Option<Q>) -> Result<R>
+  async fn query<P, T, R, Q>(
+    &self,
+    payload: Option<P>,
+    argument: Option<Q>,
+    t: Option<PhantomData<T>>,
+  ) -> Result<R>
   where
     P: Send + Serialize + Debug,
+    T: TryInto<R, Error = String> + DeserializeOwned + Send,
     R: Send + DeserializeOwned + Debug + Default,
     Q: Send + Serialize + Debug;
   async fn stream<P, Q>(
@@ -231,10 +240,6 @@ pub trait Api {
   where
     Self: Serialize + Debug,
   {
-    use miette::IntoDiagnostic;
-
-    //    log::trace!("{:#?}", self);
-
     let out = match format {
       Some(format) => match format {
         #[cfg(feature = "json")]
@@ -288,9 +293,6 @@ pub trait Api {
   where
     Self: Sized + Serialize + Debug,
   {
-    use miette::IntoDiagnostic;
-
-    //    log::trace!("{:#?}", self);
     let out = match format {
       Some(format) => match format {
         #[cfg(feature = "json")]
@@ -365,6 +367,23 @@ impl Api for EmptyResponse {
 
   fn to_table(&self) -> Result<Vec<String>> {
     Ok(vec![])
+  }
+}
+
+#[derive(Deserialize)]
+pub struct DummyTryFrom;
+
+impl TryFrom<DummyTryFrom> for EmptyResponse {
+  type Error = String;
+  fn try_from(_value: DummyTryFrom) -> std::result::Result<Self, Self::Error> {
+    Err(String::new())
+  }
+}
+
+impl<T> TryFrom<DummyTryFrom> for Vec<T> {
+  type Error = String;
+  fn try_from(_value: DummyTryFrom) -> std::result::Result<Self, Self::Error> {
+    Err(String::new())
   }
 }
 
