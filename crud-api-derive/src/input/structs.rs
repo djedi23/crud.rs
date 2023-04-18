@@ -44,7 +44,6 @@ pub(crate) fn derive_struct_decl(
         }
         .to_string(),
       ) {
-        // Declare nested types
         let input: ApiInput = input_from_type.clone().into();
         let prefix = match &prefix {
           Some(prefix) => format!("{}-{}", prefix, f.ident.as_ref().unwrap()),
@@ -328,33 +327,33 @@ mod tests {
   #[test]
   fn is_option_test() {
     let ty: Type = parse_str("String").unwrap();
-    assert_eq!(is_option(&ty), false);
+    assert!(!is_option(&ty));
     let ty: Type = parse_str("Option<String>").unwrap();
-    assert_eq!(is_option(&ty), true);
+    assert!(is_option(&ty));
     let ty: Type = parse_str("Vec<String>").unwrap();
-    assert_eq!(is_option(&ty), false);
+    assert!(!is_option(&ty));
   }
 
   #[test]
   fn is_vec_test() {
     let ty: Type = parse_str("String").unwrap();
-    assert_eq!(is_vec(&ty), false);
+    assert!(!is_vec(&ty));
     let ty: Type = parse_str("Option<String>").unwrap();
-    assert_eq!(is_vec(&ty), false);
+    assert!(!is_vec(&ty));
     let ty: Type = parse_str("Vec<String>").unwrap();
-    assert_eq!(is_vec(&ty), true);
+    assert!(is_vec(&ty));
   }
 
   #[test]
   fn is_option_vec_test() {
     let ty: Type = parse_str("String").unwrap();
-    assert_eq!(is_option_vec(&ty), false);
+    assert!(!is_option_vec(&ty));
     let ty: Type = parse_str("Option<String>").unwrap();
-    assert_eq!(is_option_vec(&ty), false);
+    assert!(!is_option_vec(&ty));
     let ty: Type = parse_str("Vec<String>").unwrap();
-    assert_eq!(is_option_vec(&ty), false);
+    assert!(!is_option_vec(&ty));
     let ty: Type = parse_str("Option<Vec<String>>").unwrap();
-    assert_eq!(is_option_vec(&ty), true);
+    assert!(is_option_vec(&ty));
   }
 
   #[test]

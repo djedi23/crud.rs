@@ -273,8 +273,8 @@ mod tests {
 
   #[test]
   fn test_is_var() {
-    assert_eq!(is_var("var"), false);
-    assert_eq!(is_var("{var}"), true);
+    assert!(!is_var("var"));
+    assert!(is_var("{var}"));
   }
   #[test]
   fn test_strip_var() {
@@ -287,7 +287,7 @@ mod tests {
     let mut endpoints_map: Emap = HashMap::new();
     let (t, o) = subcommand_rec(&endpoints_map);
     assert_eq!(t.to_string(), "");
-    assert_eq!(o, true);
+    assert!(o);
 
     endpoints_map.insert(
       "route".into(),
@@ -302,6 +302,6 @@ mod tests {
       t.to_string(),
       ". subcommand ({ let command = clap :: Command :: new (\"route\") . subcommand_precedence_over_arg (true) ; command })"
     );
-    assert_eq!(o, true);
+    assert!(o);
   }
 }
