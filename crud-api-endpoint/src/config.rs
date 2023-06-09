@@ -60,7 +60,7 @@ lazy_static! {
       "input_template".into(),
       ApiInputConfig {
         arg_name: Some("input_template".into()),
-        ty: Some("bool".into()),
+        ty: Some("Option<bool>".into()),
         num_args:None,
         long: Some("template".into()),
         short: Some('t'),
@@ -88,7 +88,6 @@ lazy_static! {
   };
 }
 
-#[allow(dead_code)]
 pub fn arg_config(k: &str, local_config: &[ApiInputConfig]) -> ApiInputConfig {
   let global = CONFIGMAP.get(k);
   let local = local_config

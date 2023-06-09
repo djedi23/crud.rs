@@ -120,7 +120,7 @@ pub fn clap_match_input_from_file<T: DeserializeOwned>(argmatches: &ArgMatches) 
 }
 
 pub fn clap_match_template<T: Serialize + Default>(argmatches: &ArgMatches) -> Result<bool> {
-  if argmatches.contains_id("input_template") {
+  if argmatches.get_flag("input_template") {
     serde_json::to_writer_pretty(stdout(), &T::default()).into_diagnostic()?;
     std::process::exit(0);
   } else {
