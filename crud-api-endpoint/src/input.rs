@@ -42,6 +42,7 @@ pub struct ApiInputVariantSerde {
   pub long: Option<String>,
   pub short: Option<char>,
   pub no_short: bool,
+  pub no_long: bool,
   pub heading: Option<String>,
   pub help: Option<String>,
   pub long_help: Option<String>,

@@ -1,3 +1,4 @@
+use case::CaseExt;
 use darling::{ast::Fields, FromVariant};
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -11,6 +12,8 @@ pub struct ApiInputVariant {
   pub long: Option<String>,
   pub short: Option<char>,
   #[darling(default)]
+  pub no_long: bool,
+  #[darling(default)]
   pub no_short: bool,
   pub heading: Option<String>,
   pub help: Option<String>,
@@ -18,61 +21,77 @@ pub struct ApiInputVariant {
 }
 
 #[rustfmt::skip::macros(quote)]
-pub(crate) fn derive_enum_decl(
+pub(crate) fn derive_enum_decl_command(
   _prefix: Option<String>,
   variants: &[ApiInputVariant],
-  heading: Option<String>,
-  conflict_input_file: TokenStream,
 ) -> Vec<TokenStream> {
-  let variants_names: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
-  let variants_args = variants
+  let variants_commands = variants
     .iter()
     .map(|variant| {
-      let arg = variant_decl_quote(variant, heading.to_owned());
-      let name = variant.ident.to_string();
-      let mut conflicts = variants_names.clone();
-      conflicts.retain(|v| name != *v);
-      let conflicts_with_all = if conflicts.is_empty() {
-        quote!()
-      } else {
-        quote!(.conflicts_with_all(&[#(#conflicts),*]))
-      };
-      // let prefix = match &prefix {
-      //   Some(prefix) => format!("{}-{}", prefix, input.ident),
-      //   None => input.ident.to_string(),
-      // };
+      let arg = variant_command_decl_quote(variant);
       let variant_fields = variant
         .fields
         .iter()
         .map(|f| {
           if let Type::Path(f) = f {
             let type_ident = &f.path.segments.first().unwrap().ident;
-            quote!(let app =
-		     <#type_ident> :: clap(app,
-					  Some(crud_api::ApiInputOptions{
-					      conflicts_with_all:vec![#(#conflicts.into()),*]
-					  }));
-	    )
+            quote!(let arg = <#type_ident> :: clap(arg,None);)
           } else {
             quote!()
           }
         })
         .collect::<Vec<TokenStream>>();
       let arg = quote! {
-	  let app=app.arg(#arg
-			.conflicts_with_all(&conflicts)
-			#conflicts_with_all
-			#conflict_input_file);
-	  #(#variant_fields)*
+	    let arg = #arg;
+	    #(#variant_fields)*
+	    let app=app.subcommand(arg);
       };
       arg
     })
     .collect::<Vec<TokenStream>>();
-  variants_args
+  variants_commands
 }
 
 #[rustfmt::skip::macros(quote)]
-pub(crate) fn derive_enum_match(
+fn variant_command_decl_quote(variant: &ApiInputVariant) -> TokenStream {
+  let name = variant.ident.to_string();
+  let command_name = name.to_snake().to_dashed();
+  let long = if variant.no_long {
+    quote!()
+  } else {
+    let l = variant.long.as_ref().unwrap_or(&name).to_lowercase();
+    quote! {.long_flag(#l)}
+  };
+  let short = if variant.no_short {
+    quote!{}
+  } else {
+    let short = if let Some(short) = variant.short {
+      short
+    } else {
+      let short = variant.long.as_ref().unwrap_or(&name).to_lowercase();
+      short.chars().next().unwrap()
+    };
+    quote!{.short_flag(#short)}
+  };
+  let about = if let Some(h) = &variant.help {
+    quote! {.about(#h)}
+  } else {
+    quote! {}
+  };
+  let long_about = if let Some(h) = &variant.long_help {
+    quote! {.long_about(#h)}
+  } else {
+    quote! {}
+  };
+  quote! {
+      clap::Command::new(#command_name)
+	  #long #short
+      #about #long_about
+  }
+}
+
+#[rustfmt::skip::macros(quote)]
+pub(crate) fn derive_enum_command_match(
   ident: &Ident,
   _prefix: Option<String>,
   variants: &[ApiInputVariant],
@@ -82,6 +101,7 @@ pub(crate) fn derive_enum_match(
     .map(|variant| {
       let variant_ident = &variant.ident;
       let name = variant.ident.to_string();
+      let command_name = name.to_snake().to_dashed();
 
       let default_value = variant
         .fields
@@ -102,62 +122,19 @@ pub(crate) fn derive_enum_match(
         quote!( (#(#default_value),*))
       };
 
-      quote! {if matches.contains_id(#name){
+      quote! {Some((#command_name, matches)) => {
 	    #ident :: #variant_ident #variant_parameters
-	} }
+      } }
     })
     .collect::<Vec<TokenStream>>();
 
   let match_variants = quote! {
-      #(#variants_values ) else*
-      else { #ident :: default() }
+	match matches.subcommand() {
+	    #(#variants_values )*
+	    Some((&_, _)) =>{#ident :: default()}
+	    None => {#ident :: default()}
+	}
   };
 
   match_variants
-}
-
-#[rustfmt::skip::macros(quote)]
-fn variant_decl_quote(variant: &ApiInputVariant, heading: Option<String>) -> TokenStream {
-  let name = variant.ident.to_string();
-  let long = {
-    let l = variant.long.as_ref().unwrap_or(&name).to_lowercase();
-    quote! {.long(#l)}
-  };
-  let short = if variant.no_short {
-    quote!{}
-  } else {
-    let short = if let Some(short) = variant.short {
-      short
-    } else {
-      let long = variant.long.as_ref().unwrap_or(&name).to_lowercase();
-      long.chars().next().unwrap()
-    };
-    quote!{.short(#short)}
-  };
-  let help = if let Some(h) = &variant.help {
-    quote! {.help(#h)}
-  } else {
-    quote! {}
-  };
-  let long_help = if let Some(h) = &variant.long_help {
-    quote! {.long_help(#h)}
-  } else {
-    quote! {}
-  };
-  let heading = if let Some(h) = &variant.heading {
-    quote! {.help_heading(#h)}
-  } else {
-    let h = heading.unwrap_or_else(|| "Payload".to_string());
-    quote! {.help_heading(#h)}
-  };
-  // let possible_values = if let Some(pv) = &variant.possible_values {
-  //   let pv = &pv.v;
-  //   quote! {.possible_values([#(#pv),*])}
-  // } else {
-  //   quote! {}
-  // };
-  quote! {
-      clap::Arg::new(#name).action(clap::ArgAction::Set)
-	  #long #short #help #long_help #heading
-  }
 }

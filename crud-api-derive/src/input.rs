@@ -4,7 +4,7 @@ mod structs;
 
 pub(crate) use self::structs::{field_quote, ApiInputField};
 use self::{
-  enums::{derive_enum_decl, derive_enum_match, ApiInputVariant},
+  enums::{derive_enum_command_match, derive_enum_decl_command, ApiInputVariant},
   structs::{derive_struct_decl, derive_struct_match},
 };
 use crud_api_endpoint::{arg_config, ApiInputConfig};
@@ -45,17 +45,12 @@ pub(crate) fn api_input_derive(ast: &DeriveInput) -> TokenStream {
       input.heading,
       conflict_input_file,
     ),
-    Data::Enum(variants) => derive_enum_decl(
-      input.prefix.to_owned(),
-      variants,
-      input.heading,
-      conflict_input_file,
-    ),
+    Data::Enum(variants) => derive_enum_decl_command(input.prefix.to_owned(), variants),
   };
 
   let struct_from_clap = match &input.data {
     Data::Struct(fields) => derive_struct_match(&ident, input.prefix, fields),
-    Data::Enum(variants) => derive_enum_match(&ident, input.prefix, variants),
+    Data::Enum(variants) => derive_enum_command_match(&ident, input.prefix, variants),
   };
 
   let app_maybe_wrapped_to_read_from_file = if input.no_input_file {

@@ -1,11 +1,10 @@
+use super::enums::{derive_enum_command_match, derive_enum_decl_command};
 use crate::input::ApiInput;
 use crud_api_endpoint::{input_map, VecStringWrapper};
 use darling::{ast::Fields, FromField};
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{GenericArgument, Ident, PathArguments, Type};
-
-use super::enums::{derive_enum_decl, derive_enum_match};
 
 #[derive(Clone, Debug, FromField)]
 #[darling(attributes(api))]
@@ -56,12 +55,7 @@ pub(crate) fn derive_struct_decl(
             heading.to_owned(),
             conflict_input_file.to_owned(),
           ),
-          darling::ast::Data::Enum(variants) => derive_enum_decl(
-            Some(prefix),
-            variants,
-            input.heading,
-            conflict_input_file.to_owned(),
-          ),
+          darling::ast::Data::Enum(variants) => derive_enum_decl_command(Some(prefix), variants),
         }
         .into_iter()
         .collect::<TokenStream>()
@@ -99,7 +93,9 @@ pub(crate) fn derive_struct_match(
         });
         let struct_quote = match &input.data {
           darling::ast::Data::Struct(fields) => derive_struct_match(&input.ident, prefix, fields),
-          darling::ast::Data::Enum(variants) => derive_enum_match(&input.ident, prefix, variants),
+          darling::ast::Data::Enum(variants) => {
+            derive_enum_command_match(&input.ident, prefix, variants)
+          }
         }
         .into_iter()
         .collect::<TokenStream>();

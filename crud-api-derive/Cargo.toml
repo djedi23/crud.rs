@@ -22,6 +22,7 @@ proc-macro-error = "1.0.4"
 proc-macro2 = "1.0.32"
 derive_builder = "0.12"
 darling = "0.14.1"
+case = "1.0.0"
 
 [features]
 dump-derives=[]
