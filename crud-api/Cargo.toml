@@ -45,6 +45,7 @@ crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
 crud-auth-bearer = {version = "0.1", path="../crud-auth-bearer"}
 chrono = { version = "0.4", default-features = false, features = ["std","serde"] }
 openssl = { version = "0.10",  features = ["vendored"] }
+serde_repr = "0.1"
 
 
 [features]

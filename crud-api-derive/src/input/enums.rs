@@ -138,3 +138,35 @@ pub(crate) fn derive_enum_command_match(
 
   match_variants
 }
+
+////////////////////////////////////////////////////////////
+
+#[rustfmt::skip::macros(quote)]
+pub(crate) fn derive_enum_match(
+  ident: &Ident,
+  _prefix: Option<String>,
+  variants: &[ApiInputVariant],
+) -> TokenStream {
+  let variants_values = variants
+    .iter()
+    .map(|variant| {
+      let variant_ident = &variant.ident;
+      let name = variant.ident.to_string();
+      let command_name = name.to_snake().to_dashed();
+
+      quote! {Some(#command_name) => {
+	    #ident :: #variant_ident
+      } }
+    })
+    .collect::<Vec<TokenStream>>();
+
+  let match_variants = quote! {
+	match matches.get_one::<String>("level").cloned().as_deref() {
+	    #(#variants_values )*
+	    Some( _) =>{#ident :: default()}
+	    None => {#ident :: default()}
+	}
+  };
+
+  match_variants
+}

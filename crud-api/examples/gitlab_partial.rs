@@ -3,6 +3,7 @@ use crud_auth::CrudAuth;
 use crud_auth_bearer::Auth;
 use miette::{Context, IntoDiagnostic, Result};
 use serde::{Deserialize, Serialize};
+use serde_repr::Serialize_repr;
 use std::fmt::Debug;
 
 #[derive(Api, Debug, Default, Deserialize, Serialize)]
@@ -46,12 +47,22 @@ struct Issue {
   labels: Vec<String>,
 }
 
+#[derive(Debug, Clone, Default, Deserialize, Serialize_repr, ApiInput)]
+#[repr(u8)]
+enum AccessLevel {
+  #[default]
+  NoAccess = 0,
+  MinimalAccess = 5,
+}
+
 #[derive(Debug, Default, ApiInput, Serialize, Deserialize)]
 struct IssueCreatePayload {
   #[api(no_short)]
   title: String,
   description: Option<String>,
   labels: Option<Vec<String>>,
+  #[api(no_short)]
+  level: AccessLevel,
 }
 
 #[derive(ApiRun)]

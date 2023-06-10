@@ -1,6 +1,9 @@
-use super::enums::{derive_enum_command_match, derive_enum_decl_command};
+use super::enums::{derive_enum_match};
 use crate::input::ApiInput;
-use crud_api_endpoint::{input_map, VecStringWrapper};
+use case::CaseExt;
+use crud_api_endpoint::{
+  input_map, ApiInputSerde, DataSerde, VecStringWrapper,
+};
 use darling::{ast::Fields, FromField};
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -44,18 +47,21 @@ pub(crate) fn derive_struct_decl(
         .to_string(),
       ) {
         let input: ApiInput = input_from_type.clone().into();
-        let prefix = match &prefix {
+        let prefix_struct = match &prefix {
           Some(prefix) => format!("{}-{}", prefix, f.ident.as_ref().unwrap()),
           None => f.ident.clone().unwrap().to_string(),
         };
         match &input.data {
           darling::ast::Data::Struct(fields) => derive_struct_decl(
-            Some(prefix),
+            Some(prefix_struct),
             fields,
             heading.to_owned(),
             conflict_input_file.to_owned(),
           ),
-          darling::ast::Data::Enum(variants) => derive_enum_decl_command(Some(prefix), variants),
+          darling::ast::Data::Enum(_variants) => {
+            let arg = field_quote(f, heading.to_owned(), prefix.to_owned());
+            vec![quote! {let app=app.arg(#arg .conflicts_with_all(&conflicts) #conflict_input_file);}]
+          } // derive_enum_decl_command(Some(prefix), variants),
         }
         .into_iter()
         .collect::<TokenStream>()
@@ -94,7 +100,8 @@ pub(crate) fn derive_struct_match(
         let struct_quote = match &input.data {
           darling::ast::Data::Struct(fields) => derive_struct_match(&input.ident, prefix, fields),
           darling::ast::Data::Enum(variants) => {
-            derive_enum_command_match(&input.ident, prefix, variants)
+            //            derive_enum_command_match(&input.ident, prefix, variants)
+            derive_enum_match(&input.ident, prefix, variants)
           }
         }
         .into_iter()
@@ -187,6 +194,17 @@ pub(crate) fn field_quote(
   let value_parser = if let Some(pv) = &field.possible_values {
     let pv = &pv.v;
     quote!(clap::builder::PossibleValuesParser::new([#(#pv),*]))
+  } else if let Some(ApiInputSerde {
+    data: DataSerde::Enum(variants),
+    ..
+  }) = input_map().get(&{ quote!(#ty) }.to_string())
+  {
+    // If the type is an enum then the variants are the possible values.
+    let pv: Vec<String> = variants
+      .iter()
+      .map(|v| v.ident.to_snake().to_dashed())
+      .collect();
+    quote! {clap::builder::PossibleValuesParser::new([#(#pv),*])}
   } else {
     quote! {clap::value_parser!(#ty)}
   };
