@@ -21,14 +21,14 @@
 //! ```toml
 //! [dependencies]
 //! log = "0.4"
-//! pretty_env_logger = "0.4"
-//! clap = "4.2"
+//! pretty_env_logger = "0.5"
+//! clap = "4.3"
 //! crud-api = {version = "0.1", path="../crud/crud-api", default-features=false, features=["toml","json","yaml"]}
 //! crud-auth = {version = "0.1", path="../crud/crud-auth"}
 //! crud-auth-bearer = {version = "0.1", path="../crud/crud-auth-bearer"}
 //! hyper = { version = "0.14", features = ["client","http1"] }
 //! hyper-tls = "0.5"
-//! miette = { version = "5.7", features = ["fancy"] }
+//! miette = { version = "5.9", features = ["fancy"] }
 //! tokio = { version = "1", features = ["full"] }
 //! serde = { version = "1.0", features = ["derive"] }
 //! # To force static openssl

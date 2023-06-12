@@ -1,4 +1,4 @@
-use darling::FromMeta;
+use darling::{ast::NestedMeta, FromMeta};
 use serde::{Deserialize, Serialize};
 
 /// Wrapper for Vec<String> to implements FromMeta
@@ -26,10 +26,10 @@ impl From<VecStringWrapper> for Vec<String> {
 }
 
 impl FromMeta for VecStringWrapper {
-  fn from_nested_meta(item: &syn::NestedMeta) -> darling::Result<Self> {
+  fn from_nested_meta(item: &NestedMeta) -> darling::Result<Self> {
     (match *item {
-      syn::NestedMeta::Lit(ref lit) => Self::from_value(lit),
-      syn::NestedMeta::Meta(ref mi) => Self::from_meta(mi),
+      NestedMeta::Lit(ref lit) => Self::from_value(lit),
+      NestedMeta::Meta(ref mi) => Self::from_meta(mi),
     })
     .map_err(|e| e.with_span(item))
   }
@@ -37,14 +37,10 @@ impl FromMeta for VecStringWrapper {
   fn from_meta(item: &syn::Meta) -> darling::Result<Self> {
     (match *item {
       syn::Meta::Path(_) => Self::from_word(),
-      syn::Meta::List(ref value) => Self::from_list(
-        &value
-          .nested
-          .iter()
-          .cloned()
-          .collect::<Vec<syn::NestedMeta>>()[..],
-      ),
-      syn::Meta::NameValue(ref value) => Self::from_value(&value.lit),
+      syn::Meta::List(ref value) => {
+        Self::from_list(&NestedMeta::parse_meta_list(value.tokens.clone())?[..])
+      }
+      syn::Meta::NameValue(ref value) => Self::from_expr(&value.value),
     })
     .map_err(|e| e.with_span(item))
   }
@@ -57,7 +53,7 @@ impl FromMeta for VecStringWrapper {
     Err(darling::Error::unsupported_format("word"))
   }
 
-  fn from_list(_items: &[syn::NestedMeta]) -> darling::Result<Self> {
+  fn from_list(_items: &[NestedMeta]) -> darling::Result<Self> {
     Err(darling::Error::unsupported_format("list"))
   }
 
@@ -69,6 +65,15 @@ impl FromMeta for VecStringWrapper {
       _ => Err(darling::Error::unexpected_lit_type(value)),
     })
     .map_err(|e| e.with_span(value))
+  }
+
+  fn from_expr(expr: &syn::Expr) -> darling::Result<Self> {
+    match *expr {
+      syn::Expr::Lit(ref lit) => Self::from_value(&lit.lit),
+      syn::Expr::Group(ref group) => Self::from_expr(&group.expr),
+      _ => Err(darling::Error::unexpected_expr_type(expr)),
+    }
+    .map_err(|e| e.with_span(expr))
   }
 
   fn from_char(_value: char) -> darling::Result<Self> {

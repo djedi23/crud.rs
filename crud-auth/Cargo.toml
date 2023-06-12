@@ -11,6 +11,6 @@ repository= "https://github.com/djedi23/crud.rs"
 
 [dependencies]
 async-trait = "0.1"
-miette = { version = "5.7", features = ["fancy"] }
-clap = {version="4.2",features=["cargo","env","unicode"]}
+miette = { version = "5.9", features = ["fancy"] }
+clap = {version="4.3",features=["cargo","env","unicode"]}
 config = "0.13"

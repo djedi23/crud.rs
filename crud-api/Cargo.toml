@@ -15,12 +15,12 @@ crud-api-derive = {version = "0.1", path="../crud-api-derive"}
 crud-tidy-viewer = {version = "0.1", path="../crud-tidy-viewer"}
 crud-auth = {version = "0.1", path="../crud-auth"}
 
-clap = { version = "4.2", features = ["env","unicode","wrap_help","cargo"] }
-clap_complete = "4.2"
+clap = { version = "4.3", features = ["env","unicode","wrap_help","cargo"] }
+clap_complete = "4.3"
 config = "0.13"
 directories = "5.0"
 log = "^0.4"
-pretty_env_logger = "^0.4"
+pretty_env_logger = "^0.5"
 
 
 async-trait = "0.1"
@@ -34,7 +34,7 @@ serde_yaml = {version= "0.9", optional=true}
 csv = {version="1.1", optional=true}
 serde_qs = "0.12"
 indicatif = "0.17"
-miette = { version = "5.7", features = ["fancy"] }
+miette = { version = "5.9", features = ["fancy"] }
 thiserror = "1.0"
 owo-colors = "3.4.0"
 regex = "1.6.0"

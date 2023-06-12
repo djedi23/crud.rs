@@ -10,9 +10,9 @@ repository= "https://github.com/djedi23/crud.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-syn = {version="1.0", features=["extra-traits"]}
+syn = {version="2.0", features=["extra-traits"]}
 derive_builder = "0.12"
-darling = "0.14"
+darling = "0.20"
 proc-macro-error = "1.0"
 proc-macro2 = "1.0"
 quote = "1.0"
@@ -26,8 +26,8 @@ scratch = "1.0.5"
 crud-api = {version = "0.1", path="../crud-api"}
 crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
 crud-auth = {version = "0.1", path="../crud-auth"}
-clap = { version = "4.2", features = ["color","cargo","env","suggestions","unicode"] }
+clap = { version = "4.3", features = ["color","cargo","env","suggestions","unicode"] }
 log = "^0.4"
-pretty_env_logger = "^0.4"
-miette = { version = "5.7", features = ["fancy"] }
+pretty_env_logger = "^0.5"
+miette = { version = "5.9", features = ["fancy"] }
 openssl = { version = "0.10", features = ["vendored"] }

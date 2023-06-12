@@ -23,5 +23,5 @@ crossterm = "0.26"
 
 
 [dev-dependencies]
-miette = { version = "5.7", features = ["fancy"] }
+miette = { version = "5.9", features = ["fancy"] }
 
