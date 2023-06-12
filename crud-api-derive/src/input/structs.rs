@@ -101,7 +101,7 @@ pub(crate) fn derive_struct_match(
           darling::ast::Data::Struct(fields) => derive_struct_match(&input.ident, prefix, fields),
           darling::ast::Data::Enum(variants) => {
             //            derive_enum_command_match(&input.ident, prefix, variants)
-            derive_enum_match(&input.ident, prefix, variants)
+            derive_enum_match(fname, &input.ident, prefix, variants)
           }
         }
         .into_iter()

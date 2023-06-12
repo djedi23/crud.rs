@@ -143,6 +143,7 @@ pub(crate) fn derive_enum_command_match(
 
 #[rustfmt::skip::macros(quote)]
 pub(crate) fn derive_enum_match(
+  field_name: &Ident,
   ident: &Ident,
   _prefix: Option<String>,
   variants: &[ApiInputVariant],
@@ -160,8 +161,9 @@ pub(crate) fn derive_enum_match(
     })
     .collect::<Vec<TokenStream>>();
 
+  let field_name = field_name.to_string();
   let match_variants = quote! {
-	match matches.get_one::<String>("level").cloned().as_deref() {
+	match matches.get_one::<String>(#field_name).cloned().as_deref() {
 	    #(#variants_values )*
 	    Some( _) =>{#ident :: default()}
 	    None => {#ident :: default()}

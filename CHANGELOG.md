@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Bug
+- **crud-api-derive:** match enum user the field's name.
+
 
 <a name="v0.1.3"></a>
 ## [v0.1.3] - 2023-06-12
