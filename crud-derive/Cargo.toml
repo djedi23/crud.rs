@@ -1,6 +1,6 @@
 [package]
 name = "crud-derive"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description= "CLI generator for your API. derive Crud implementation."
 license = "MIT"

@@ -1,6 +1,6 @@
 [package]
 name = "crud"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors= ["Mose Valvassori <moise.valvassori@gmail.com>"]
 description= "CLI generator for your favorite CRUD REST API."
