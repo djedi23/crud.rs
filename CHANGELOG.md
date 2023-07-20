@@ -1,8 +1,16 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.1.4"></a>
+## [v0.1.4] - 2023-07-20
 ### Bug
 - **crud-api-derive:** match enum user the field's name.
+- **crud-api-endpoint:** scratch don't create dir.
+
+### Feat
+- **crud-api-derive:** rename #[api(format)] to #[api(table_format)]
+- **crud-pretty-struct:** new crates crud-pretty-struct and crud-pretty-struct-derive. These crates allow to format struct as tree with custom label, colors, custom fields format, ...
 
 
 <a name="v0.1.3"></a>
@@ -44,7 +52,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-12-30
 
-[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.4...HEAD
+[v0.1.4]: https://github.com/djedi23/crud.rs/compare/v0.1.3...v0.1.4
 [v0.1.3]: https://github.com/djedi23/crud.rs/compare/v0.1.2...v0.1.3
 [v0.1.2]: https://github.com/djedi23/crud.rs/compare/v0.1.1...v0.1.2
 [v0.1.1]: https://github.com/djedi23/crud.rs/compare/v0.1.0-p3...v0.1.1

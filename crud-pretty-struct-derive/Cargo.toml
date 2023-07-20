@@ -1,6 +1,6 @@
 [package]
 name = "crud-pretty-struct-derive"
-version = "0.1.0"
+version = "0.1.4"
 edition = "2021"
 description= "Pretty display for struct"
 license = "MIT"
