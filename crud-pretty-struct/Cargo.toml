@@ -17,7 +17,7 @@ path = "src/lib.rs" # required by `cargo readme`
 crud-pretty-struct-derive = {version = "0.1", path="../crud-pretty-struct-derive"}
 owo-colors = "3.5"
 miette = { version = "5.9", features = ["fancy"] }
-chrono = {version = "0.4", optional = true}
+chrono = {version = "0.4", default-features=false, features = ["std","serde","clock"], optional = true}
 humantime = {version ="2.1", optional = true}
 termimad = {version ="0.20", optional = true}
 bytesize = {version ="1.2", optional = true}
