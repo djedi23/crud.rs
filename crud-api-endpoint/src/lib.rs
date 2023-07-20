@@ -222,6 +222,13 @@ pub struct EpNode {
 
 fn endpoint_filename() -> PathBuf {
   let mut dir = scratch::path("crud_api");
+  if let Err(why) = std::fs::create_dir_all(&dir) {
+    panic!(
+      "! Error while creating the endpoints temp dir: {kind:?}",
+      kind = why.kind()
+    );
+  }
+
   dir.push(format!("endpoints-{}.json", std::process::id()));
   dir
 }
