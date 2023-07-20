@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [ crud-api-endpoint, crud-derive, crud-api-derive, crud-tidy-viewer, crud-auth, crud-auth-bearer, crud-auth-no-auth, crud-api, crud ]
+        package: [ crud-api-endpoint, crud-derive, crud-api-derive, crud-tidy-viewer, crud-auth, crud-auth-bearer, crud-auth-no-auth, crud-pretty-struct-derive, crud-pretty-struct, crud-api, crud ]
     continue-on-error: true
     steps:
       - uses: actions/checkout@master
