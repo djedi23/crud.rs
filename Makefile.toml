@@ -16,6 +16,7 @@ env = { "CARGO_MAKE_WORKSPACE_INCLUDE_MEMBERS" = [
     "crud-auth",
     "crud-auth-bearer",
     "crud-auth-no-auth",
+    "crud-pretty-struct",
     "crud-tidy-viewer",
 ] }
 run_task = { name = "readme", fork=true }

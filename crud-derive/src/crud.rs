@@ -7,7 +7,7 @@ use darling::{
 };
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{Attribute, DeriveInput, Ident, Type};
+use syn::{Attribute, DeriveInput, Ident, MetaList, Type};
 
 #[derive(Debug, FromField, Clone)]
 #[darling(attributes(crud), forward_attrs(serde))]
@@ -54,6 +54,7 @@ impl From<CrudField> for ApiField {
 struct Crud {
   ident: Ident,
   pub data: Data<ApiVariant, CrudField>,
+  pub attrs: Vec<syn::Attribute>,
 
   /// Endpoint route prefix. example: `route="/myroute"`
   route: Option<String>,
@@ -79,6 +80,14 @@ pub(crate) fn crud_expension(ast: &DeriveInput) -> TokenStream {
   } else {
     format!("/{}", crud.ident.to_string().to_lowercase())
   };
+
+  let is_pretty = crud.attrs.iter().any(|Attribute { meta, .. }| match meta {
+    syn::Meta::List(MetaList { tokens, .. }) => tokens
+      .clone()
+      .into_iter()
+      .any(|ident| ident.to_string() == "PrettyPrint"),
+    _ => false,
+  });
 
   let list = EndpointBuilder::default()
     .route(route.to_owned())
@@ -166,7 +175,7 @@ pub(crate) fn crud_expension(ast: &DeriveInput) -> TokenStream {
   let create_payload = create_payload(&crud.ident, &crud.data);
   let update_payload = update_payload(&crud.ident, &crud.data);
   let replace_payload = replace_payload(&crud.ident, &crud.data);
-  let table = table_impl(&crud.ident, &crud.data);
+  let table = table_impl(&crud.ident, &crud.data, is_pretty);
   let ident = crud.ident;
   let out = quote! {
       #create_payload

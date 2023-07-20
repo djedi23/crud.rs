@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
         "crud",
         "crud-derive",
@@ -6,8 +7,9 @@ members = [
         "crud-api-derive",
         "crud-api-endpoint",
         "crud-tidy-viewer",
+        "crud-pretty-struct",
+        "crud-pretty-struct-derive",
         "crud-auth",
         "crud-auth-bearer",
         "crud-auth-no-auth"
 ]
-

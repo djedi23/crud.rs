@@ -71,4 +71,5 @@ The complete code of this example is at [`./crud/examples/jsonplaceholder.rs`](.
 - [crud-auth](./crud-auth): `CrudAuth` trait.
 - [crud-auth-bearer](./crud-auth-bearer): Implementation of `CrudAuth` trait for bearer auth.
 - [crud-auth-no-auth](./crud-auth-no-auth): Implementation of `CrudAuth` trait for no authentification.
+- [crud-pretty-struct](./crud-pretty-struct): Custom pretty printer for structs.
 - [crud-tidy-viewer](./crud-tidy-viewer): array pretty printer.

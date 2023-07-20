@@ -1,0 +1,33 @@
+[package]
+name = "crud-pretty-struct"
+version = "0.1.0"
+edition = "2021"
+description= "Pretty display for struct"
+license = "MIT"
+homepage = "https://github.com/djedi23/crud.rs"
+repository= "https://github.com/djedi23/crud.rs"
+
+[lib]
+path = "src/lib.rs" # required by `cargo readme`
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+crud-pretty-struct-derive = {version = "0.1", path="../crud-pretty-struct-derive"}
+owo-colors = "3.5"
+miette = { version = "5.9", features = ["fancy"] }
+chrono = {version = "0.4", optional = true}
+humantime = {version ="2.1", optional = true}
+termimad = {version ="0.20", optional = true}
+bytesize = {version ="1.2", optional = true}
+
+[dev-dependencies]
+is-terminal = "0.4"
+
+[features]
+dump-derives=["crud-pretty-struct-derive/dump-derives"]
+chrono=["dep:chrono"]
+humantime=["dep:humantime"]
+markdown=["dep:termimad"]
+bytesize=["dep:bytesize"]

@@ -2,6 +2,7 @@ use crud::Crud;
 use crud_api::{Api, ApiInput, ApiRun, EmptyResponse, Query};
 use crud_auth::CrudAuth;
 use crud_auth_no_auth::Auth;
+use crud_pretty_struct::PrettyPrint;
 use miette::Result;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -18,7 +19,7 @@ struct PostParameters {
   body: Option<String>,
 }
 
-#[derive(Debug, Crud, Deserialize, Serialize, Default)]
+#[derive(Debug, Crud, Deserialize, Serialize, Default, PrettyPrint)]
 #[crud(parameters = "PostParameters")]
 #[crud(nested(route = "/users/{id}/posts"))]
 #[allow(dead_code, non_snake_case)]
@@ -77,7 +78,7 @@ impl Display for Address {
   }
 }
 
-#[derive(Debug, Crud, Deserialize, Serialize, Default)]
+#[derive(Debug, Crud, Deserialize, Serialize, Default, PrettyPrint)]
 #[crud(route = "/users")]
 struct User {
   #[crud(id, no_short)]
@@ -101,7 +102,7 @@ struct CommentFilters {
   body: Option<String>,
 }
 
-#[derive(Debug, Crud, Deserialize, Serialize, Default)]
+#[derive(Debug, Crud, Deserialize, Serialize, Default, PrettyPrint)]
 #[crud(route = "/comments", parameters = "CommentFilters")]
 #[crud(nested(route = "/posts/{id}/comments"))]
 #[allow(dead_code, non_snake_case)]
@@ -123,7 +124,7 @@ struct AlbumFilters {
   title: Option<String>,
 }
 
-#[derive(Debug, Crud, Deserialize, Serialize, Default)]
+#[derive(Debug, Crud, Deserialize, Serialize, Default, PrettyPrint)]
 #[crud(route = "/albums", parameters = "AlbumFilters", help = "User's album")]
 #[crud(nested(route = "/users/{id}/albums"))]
 struct Album {
@@ -148,7 +149,7 @@ struct PhotoFilters {
   thumbnail_url: Option<String>,
 }
 
-#[derive(Debug, Crud, Deserialize, Serialize, Default)]
+#[derive(Debug, Crud, Deserialize, Serialize, Default, PrettyPrint)]
 #[crud(route = "/photos", parameters = "PhotoFilters")]
 #[crud(nested(route = "/albums/{id}/photos"))]
 struct Photo {
@@ -173,7 +174,7 @@ struct TodoFilters {
   completed: Option<bool>,
 }
 
-#[derive(Debug, Crud, Deserialize, Serialize, Default)]
+#[derive(Debug, Crud, Deserialize, Serialize, Default, PrettyPrint)]
 #[crud(route = "/todos", parameters = "TodoFilters")]
 #[crud(nested(route = "/users/{id}/todos"))]
 struct Todo {

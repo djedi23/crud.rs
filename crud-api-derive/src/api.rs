@@ -2,11 +2,19 @@ use crud_api_endpoint::{store_endpoint, table_impl, Api};
 use darling::FromDeriveInput;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::DeriveInput;
+use syn::{Attribute, DeriveInput, MetaList};
 
 #[rustfmt::skip::macros(quote)]
 pub fn api(ast: &DeriveInput) -> TokenStream {
   let api = Api::from_derive_input(ast).unwrap();
+  let is_pretty = api.attrs.iter().any(|Attribute { meta, .. }| match meta {
+    syn::Meta::List(MetaList { tokens, .. }) => tokens
+      .clone()
+      .into_iter()
+      .any(|ident| ident.to_string() == "PrettyPrint"),
+    _ => false,
+  });
+
   for endpoint in api.endpoint {
     let mut endpoint = endpoint;
     if endpoint.result_struct.is_empty() {
@@ -17,7 +25,7 @@ pub fn api(ast: &DeriveInput) -> TokenStream {
   }
 
   let ident = api.ident;
-  let table = table_impl(&ident, &api.data);
+  let table = table_impl(&ident, &api.data, is_pretty);
   quote! {
   #table
       impl TryFrom<crud_api::DummyTryFrom> for #ident {

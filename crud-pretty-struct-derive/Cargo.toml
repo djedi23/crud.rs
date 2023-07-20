@@ -1,0 +1,30 @@
+[package]
+name = "crud-pretty-struct-derive"
+version = "0.1.0"
+edition = "2021"
+description= "Pretty display for struct"
+license = "MIT"
+homepage = "https://github.com/djedi23/crud.rs"
+repository= "https://github.com/djedi23/crud.rs"
+
+[lib]
+proc-macro = true
+path = "src/lib.rs" # required by `cargo readme`
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+syn = {version="2.0", features=["extra-traits"]}
+quote = "1.0"
+proc-macro-error = "1.0"
+proc-macro2 = "1.0"
+derive_builder = "0.12"
+darling = "0.20"
+strum = { version = "0.25", features = ["derive"] }
+
+[dev-dependencies]
+owo-colors = "3.5"
+
+[features]
+dump-derives=[]

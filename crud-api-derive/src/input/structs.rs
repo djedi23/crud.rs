@@ -1,9 +1,7 @@
-use super::enums::{derive_enum_match};
+use super::enums::derive_enum_match;
 use crate::input::ApiInput;
 use case::CaseExt;
-use crud_api_endpoint::{
-  input_map, ApiInputSerde, DataSerde, VecStringWrapper,
-};
+use crud_api_endpoint::{input_map, ApiInputSerde, DataSerde, VecStringWrapper};
 use darling::{ast::Fields, FromField};
 use proc_macro2::TokenStream;
 use quote::quote;

@@ -1,22 +1,22 @@
 //! # Crud Api
-//!
+//! 
 //! This crate provides a framework to generate an executable to manipulate your HTTP API from CLI.
-//!
+//! 
 //! The apps using this lib can replace your _curl_ queries when you need to access to your favorite API.
-//!
+//! 
 //! ## Features
-//!
+//! 
 //! API:
 //! - data are encoded in JSON. It don't support XML, grpc, ...
 //! - output can be formated on json, yaml, toml, csv or tsv
 //! - output stream on stdout or in a file
-//!
-//!
+//! 
+//! 
 //! ## Tutorial
-//!
+//! 
 //! Let's create an CLI for [jsonplaceholder](http://jsonplaceholder.typicode.com/) API.
 //! For the impatients, the whole code of this example can be found in [`examples/jsonplaceholder_api.rs`](./examples/jsonplaceholder_api.rs "jsonplaceholder_api.rs")
-//!
+//! 
 //! First add these dependencies to `Cargo.toml`:
 //! ```toml
 //! [dependencies]
@@ -34,7 +34,7 @@
 //! # To force static openssl
 //! openssl = { version = "0.10", features = ["vendored"] }
 //! ```
-//!
+//! 
 //! Now, create a minimal runner stucture and a `main` function.
 //! `ApiRun` on `JSONPlaceHolder` derives all the CLI.
 //! ```rust
@@ -42,10 +42,10 @@
 //! use crud_auth::CrudAuth;
 //! use crud_auth_no_auth::Auth;
 //! use miette::{IntoDiagnostic, Result};
-//!
+//! 
 //! #[derive(ApiRun)]
 //! struct JSONPlaceHolder;
-//!
+//! 
 //! #[tokio::main]
 //! async fn main() -> Result<()> {
 //!   JSONPlaceHolder::run().await
@@ -84,13 +84,13 @@
 //!   body: String,
 //! }
 //! ```
-//!
+//! 
 //! Now, we can declare the endpoint.
 //! The minimal parameters are:
 //! - `route`, the target api route.
 //! - `cli_route`, the route transcipted as cli arguments. Each slash separate a subcommand.
 //! The other parameters can found in [`crud_api_endpoint::Api`] and [`crud_api_endpoint::Enpoint`] structs documentation.
-//!
+//! 
 //! ```rust
 //! # use serde::{Deserialize, Serialize};
 //! use crud_api::Api;
@@ -109,17 +109,16 @@
 //!   body: String,
 //! }
 //! ```
-//!
 //! We can create more complex enpoint. Let's create an edit route.
-//!
+//! 
 //! - The `route` parameter takes a post's `id` argument. This argument should be present in the `cli_route`.
 //! - the HTTP method is set with the `method` parameter.
 //! - Some help can be provided via the parameters `cli_help` and `cli_long_help`.
 //! - the payload is described by the struct declared with the `payload_struct`. The query parameter can be add with the `query_struct` parameter.
-//!
+//! 
 //! In this step, the payload structure is `PostCreate` (the same structure is used for both creation and update). `PostCreate` derives `ApiInput`. All `PostCreate` fields parameters are describe in the [`crud_api_endpoint::ApiInputConfig`] structs.
-//!
-//!
+//! 
+//! 
 //! ```rust
 //! # use serde::{Deserialize, Serialize};
 //! use crud_api::{Api, ApiInput};
@@ -145,7 +144,7 @@
 //!   title: String,
 //!   body: String,
 //! }
-//!
+//! 
 //! #[derive(Debug, ApiInput, Default, Serialize, Deserialize)]
 //! #[allow(dead_code, non_snake_case)]
 //! struct PostCreate {
@@ -157,10 +156,17 @@
 //!   body: String,
 //! }
 //! ```
+//! 
+//! ## Output Customization
+//! 
+//! ### Pretty Structures
+//! 
+//! The crate [`crud-pretty-struct`](crud_pretty_struct) can format a single (json) struct.
 
 use async_trait::async_trait;
 use clap::{ArgMatches, Command, Id};
 pub use crud_api_derive::*;
+use crud_pretty_struct::PrettyPrint;
 #[cfg(any(feature = "json", feature = "toml", feature = "yaml", feature = "csv"))]
 use crud_tidy_viewer::{display_table, TableConfig};
 use formats::OutputFormat;
@@ -170,7 +176,6 @@ pub use formats::{
 };
 use miette::{IntoDiagnostic, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-pub use upload::UploadBase64;
 use std::{
   fmt::Debug,
   marker::{PhantomData, Sized},
@@ -234,6 +239,7 @@ pub trait Query {
 pub trait Api {
   fn to_table_header(&self) -> Vec<String>;
   fn to_table(&self) -> Result<Vec<String>>;
+  fn to_output(&self) -> Result<String>;
 
   #[cfg(any(feature = "json", feature = "toml", feature = "yaml", feature = "csv"))]
   fn output(&self, format: Option<OutputFormat>) -> Result<()>
@@ -266,11 +272,11 @@ pub trait Api {
           None
         }
       },
-      None => Some(toml::to_string_pretty(self).into_diagnostic()?),
+      None => Some(self.to_output()?),
     };
 
     if let Some(out) = out {
-      println!("{out}");
+      print!("{out}");
     }
     Ok(())
   }
@@ -358,7 +364,7 @@ pub trait Api {
 }
 
 /// An empty response. Use it in `result_struct`
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, PrettyPrint)]
 pub struct EmptyResponse {}
 impl Api for EmptyResponse {
   fn to_table_header(&self) -> Vec<String> {
@@ -367,6 +373,10 @@ impl Api for EmptyResponse {
 
   fn to_table(&self) -> Result<Vec<String>> {
     Ok(vec![])
+  }
+
+  fn to_output(&self) -> Result<String> {
+    Ok(String::new())
   }
 }
 

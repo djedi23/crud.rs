@@ -22,6 +22,7 @@ crud-auth = {version = "0.1", path="../crud-auth"}
 [dev-dependencies]
 crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
 crud-auth-bearer = {version = "0.1", path="../crud-auth-bearer"}
+crud-pretty-struct = {version = "0.1", path="../crud-pretty-struct"}
 openssl = { version = "0.10", features = ["vendored"] }
 
 miette = { version = "5.9", features = ["fancy"] }
@@ -31,6 +32,7 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 hyper = { version = "0.14", features = ["client","http1"] }
 clap = { version = "4.3", features = ["color","cargo","env","suggestions","unicode"] }
+serde_yaml = {version= "0.9"}
 
 
 [[example]]

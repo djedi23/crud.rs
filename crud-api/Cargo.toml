@@ -14,6 +14,8 @@ crud-api-derive = {version = "0.1", path="../crud-api-derive"}
 #crud-api-derive = {version = "0.1", path="../crud-api-derive", features=["dump-derives"]}
 crud-tidy-viewer = {version = "0.1", path="../crud-tidy-viewer"}
 crud-auth = {version = "0.1", path="../crud-auth"}
+crud-pretty-struct = {version = "0.1", path="../crud-pretty-struct"}
+crud-pretty-struct-derive = {version = "0.1", path="../crud-pretty-struct-derive"}
 
 clap = { version = "4.3", features = ["env","unicode","wrap_help","cargo"] }
 clap_complete = "4.3"
@@ -29,7 +31,7 @@ hyper-tls = { version = "0.5" }
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-toml = "0.7"
+toml = {version="0.7", optional=true}
 serde_yaml = {version= "0.9", optional=true}
 csv = {version="1.1", optional=true}
 serde_qs = "0.12"
@@ -46,6 +48,7 @@ crud-auth-bearer = {version = "0.1", path="../crud-auth-bearer"}
 chrono = { version = "0.4", default-features = false, features = ["std","serde"] }
 openssl = { version = "0.10",  features = ["vendored"] }
 serde_repr = "0.1"
+is-terminal = "0.4"
 
 
 [features]
@@ -54,5 +57,5 @@ csv= ["dep:csv"]
 dump-derives=["crud-api-derive/dump-derives"]
 yaml= ["dep:serde_yaml"]
 json=[]
-toml=[]
+toml=["dep:toml"]
 debug-http=[]

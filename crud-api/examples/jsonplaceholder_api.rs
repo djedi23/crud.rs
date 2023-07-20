@@ -1,6 +1,7 @@
 use crud_api::{Api, ApiInput, ApiRun, EmptyResponse, Query};
 use crud_auth::CrudAuth;
 use crud_auth_no_auth::Auth;
+use crud_pretty_struct::PrettyPrint;
 use miette::Result;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display};
@@ -54,6 +55,7 @@ use std::fmt::{Debug, Display};
     cli_help = "Update a Posts"
   )
 )]
+#[derive(PrettyPrint)]
 #[allow(dead_code, non_snake_case)]
 struct Post {
   id: u32,
@@ -136,6 +138,7 @@ struct CommentFilters {
   payload_struct = "UserCreate",
   result_ok_status = "CREATED",
 ))]
+#[derive(PrettyPrint)]
 //#[allow(non_snake_case)]
 struct User {
   id: u32,
@@ -144,10 +147,12 @@ struct User {
   email: String,
   phone: String,
   website: String,
+  #[pretty(is_pretty)]
   company: Company,
+  #[pretty(is_pretty)]
   address: Address,
 }
-#[derive(Debug, Default, ApiInput, Serialize, Deserialize)]
+#[derive(Debug, Default, ApiInput, Serialize, Deserialize, PrettyPrint)]
 struct Geo {
   #[api(no_short)]
   lat: String,
@@ -155,13 +160,14 @@ struct Geo {
   lng: String,
 }
 
-#[derive(Debug, Default, ApiInput, Serialize, Deserialize)]
+#[derive(Debug, Default, ApiInput, Serialize, Deserialize, PrettyPrint)]
 struct Address {
   street: String,
   #[api(no_short)]
   suite: String,
   city: String,
   zipcode: String,
+  #[pretty(is_pretty)]
   geo: Geo,
 }
 impl Display for Address {
@@ -173,7 +179,7 @@ impl Display for Address {
   }
 }
 
-#[derive(Debug, Default, ApiInput, Serialize, Deserialize)]
+#[derive(Debug, Default, ApiInput, Serialize, Deserialize, PrettyPrint)]
 #[allow(non_snake_case)]
 struct Company {
   #[api(no_short)]

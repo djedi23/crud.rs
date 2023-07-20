@@ -48,10 +48,11 @@ pub struct ApiVariant {
 }
 
 #[derive(Debug, FromDeriveInput)]
-#[darling(attributes(api, suggest))]
+#[darling(attributes(api, suggest), forward_attrs(derive))]
 pub struct Api {
   pub ident: Ident,
   pub data: Data<ApiVariant, ApiField>,
+  pub attrs: Vec<syn::Attribute>,
 
   #[darling(default)]
   #[darling(multiple)]
@@ -67,6 +68,7 @@ pub struct Api {
 pub fn table_impl<T: Into<ApiField> + Clone>(
   struct_ident: &Ident,
   data: &Data<ApiVariant, T>,
+  is_pretty: bool,
 ) -> TokenStream {
   let (headers, table_convertions) = match data {
     Data::Enum(_) => {
@@ -128,6 +130,26 @@ pub fn table_impl<T: Into<ApiField> + Clone>(
     }
   };
 
+  let to_output = if is_pretty {
+    quote!{
+	  fn to_output(&self) -> miette::Result<String>
+	  where Self:crud_pretty_struct::PrettyPrint
+	{
+	    use is_terminal::IsTerminal;
+	    self.pretty(std::io::stdout().is_terminal(), None)
+	  }
+      }
+  } else {
+    quote!{
+	fn to_output(&self) -> miette::Result<String>
+	where Self: Serialize
+	{
+	    use miette::IntoDiagnostic;
+	    serde_yaml::to_string(self).into_diagnostic()
+	}
+      }
+  };
+
   quote! {impl crud_api::Api for #struct_ident {
       fn to_table_header(&self) -> Vec<String> {
 	  vec![#(#headers),*]
@@ -135,6 +157,7 @@ pub fn table_impl<T: Into<ApiField> + Clone>(
       fn to_table(&self) -> miette::Result<Vec<String>> {
 	  Ok(vec![#table_convertions])
       }
+      #to_output
   }}
 }
 

@@ -100,7 +100,6 @@ struct Post {
   body: String,
 }
 ```
-
 We can create more complex enpoint. Let's create an edit route.
 
 - The `route` parameter takes a post's `id` argument. This argument should be present in the `cli_route`.
@@ -147,3 +146,10 @@ struct PostCreate {
   body: String,
 }
 ```
+
+### Output Customization
+
+
+#### Pretty Structures
+
+The crate [`crud-pretty-struct`](crud_pretty_struct) can format a single (json) struct.
