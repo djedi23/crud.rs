@@ -159,6 +159,14 @@
 //! 
 //! ## Output Customization
 //! 
+//! ### Tables
+//! 
+//! Results arrays are formatted using the crate [`crud-tidy-viewer`](crud_tidy_viewer).
+//! The available table column options are:
+//! - [`table_skip`](../crud_api_endpoint/struct.ApiField.html#structfield.table_skip): don't display this field in the table.
+//! - [`table_format`](../crud_api_endpoint/struct.ApiField.html#structfield.table_format): format this field in table.
+//!   - date formatter: `date(format = "%Y-%m-%d %H:%M:%S")`
+//! 
 //! ### Pretty Structures
 //! 
 //! The crate [`crud-pretty-struct`](crud_pretty_struct) can format a single (json) struct.

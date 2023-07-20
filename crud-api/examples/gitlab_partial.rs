@@ -38,11 +38,11 @@ struct Issue {
   title: String,
   #[api(table_skip)]
   description: Option<String>,
-  #[api(format(date(format = "%Y-%m-%d %H:%M:%S")))]
+  #[api(table_format(date(format = "%Y-%m-%d %H:%M:%S")))]
   updated_at: String,
   #[api(table_skip)]
   web_url: String,
-  #[api(format(date(format = "%Y-%m-%d %H:%M:%S")))]
+  #[api(table_format(date(format = "%Y-%m-%d %H:%M:%S")))]
   created_at: String,
   labels: Vec<String>,
 }

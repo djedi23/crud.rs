@@ -35,7 +35,7 @@ pub struct CrudField {
   #[darling(default)]
   table_skip: bool,
   /// Format of the field
-  pub format: Option<FieldFormat>,
+  pub table_format: Option<FieldFormat>,
 }
 
 impl From<CrudField> for ApiField {
@@ -44,7 +44,7 @@ impl From<CrudField> for ApiField {
       ident: cf.ident,
       ty: cf.ty,
       table_skip: cf.table_skip,
-      format: cf.format,
+      table_format: cf.table_format,
     }
   }
 }

@@ -16,7 +16,7 @@ pub struct ApiField {
   #[darling(default)]
   pub table_skip: bool,
   /// Format of the field
-  pub format: Option<FieldFormat>,
+  pub table_format: Option<FieldFormat>,
 }
 
 #[derive(Debug, FromMeta, Clone)]
@@ -114,7 +114,7 @@ pub fn table_impl<T: Into<ApiField> + Clone>(
             quote! {self.#fname .to_string().replace('\n', "\\n")}
           };
 
-          let formated_value = if let Some(FieldFormat::Date { format }) = field.format {
+          let formated_value = if let Some(FieldFormat::Date { format }) = field.table_format {
             quote!(#unformated_value.parse::<chrono::DateTime<chrono::Utc>>()
 		    .into_diagnostic().wrap_err("Can't parse Date")?
 		    .format(#format).to_string()
