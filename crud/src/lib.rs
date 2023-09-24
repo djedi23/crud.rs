@@ -32,10 +32,23 @@
 //! File `settings.toml`
 //!
 //! | option     | description          |                            |
-//! | ---------- | -------------------- | -------------------------- |
-//! | base       | Base url of the api  |                            |
+//! |------------|----------------------|----------------------------|
+//! | base_url   | Base url of the api  |                            |
 //! | auth_token | token send as bearer | read by `crud-auth-bearer` |
-//! |            |                      |                            |
+//!
+//! #### Profiles
+//!
+//! In `settings.toml`, you can define multiple profiles:
+//! ```ignore
+//! [profile.p1]
+//! base_url="..."
+//! uth_token="..."
+//! [profile.p2]
+//! base_url="..."
+//! uth_token="..."
+//! ```
+//!
+//! You call the profiles with the `--profile` argument.
 
 extern crate crud_derive;
 #[doc(hidden)]

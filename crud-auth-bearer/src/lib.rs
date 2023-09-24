@@ -38,6 +38,12 @@ impl CrudAuth for Auth {
   fn clap_matches(&mut self, matches: &ArgMatches, _app: &mut Command, settings: &Config) {
     if let Some(token) = matches.get_one::<String>(AUTH_TOKEN_ARG).cloned() {
       self.header = ("Authorization".to_string(), "Bearer ".to_string() + &token);
+    } else if let Some(profile) = matches.get_one::<String>("profile") {
+      if let Ok(token) = settings.get_string(&format!("profile.{profile}.{}", AUTH_TOKEN_SETTING)) {
+        self.header = ("Authorization".to_string(), "Bearer ".to_string() + &token);
+      } else if let Ok(token) = settings.get_string(AUTH_TOKEN_SETTING) {
+        self.header = ("Authorization".to_string(), "Bearer ".to_string() + &token);
+      }
     } else if let Ok(token) = settings.get_string(AUTH_TOKEN_SETTING) {
       self.header = ("Authorization".to_string(), "Bearer ".to_string() + &token);
     }

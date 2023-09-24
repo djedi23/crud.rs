@@ -72,6 +72,7 @@ pub(crate) fn init_clap(api: &ApiRun) -> proc_macro2::TokenStream {
     commands = commands.author(clap::crate_description!());}
   };
 
+  let profile = setting_clap_decl("profile", "profile", "Profile to use. default: no profile");
   let arg_base = setting_clap_decl("base_url", "base-url", "Override the base url");
   quote! {
       let mut commands = crud_api::cli::init_clap();
@@ -79,6 +80,7 @@ pub(crate) fn init_clap(api: &ApiRun) -> proc_macro2::TokenStream {
       #app_author
       #app_version
       #app_about
+      #profile
       #arg_base
   }
 }
@@ -90,7 +92,7 @@ fn setting_clap_decl(ident: &str, long: &str, help: &str) -> TokenStream {
       ty: parse_str("String").unwrap(),
       long: Some(long.to_string()),
       short: None,
-      no_short: None,
+      no_short: Some(true),
       heading: Some("Configuration".to_string()),
       help: Some(help.to_string()),
       long_help: None,

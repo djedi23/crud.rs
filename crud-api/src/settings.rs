@@ -2,7 +2,7 @@ extern crate directories;
 use clap::ArgMatches;
 use config::{Config, Environment, File};
 use directories::ProjectDirs;
-use log::debug;
+use log::{debug, trace};
 use miette::{bail, IntoDiagnostic, Result};
 use std::path::Path;
 
@@ -24,14 +24,22 @@ pub fn settings(
     debug!("Try to load config file: {}", &path);
   }
   settings_builder = settings_builder.add_source(Environment::with_prefix(env_prefix));
-
-  //  Ok(settings_builder.build().into_diagnostic()?)
   settings_builder.build().into_diagnostic()
 }
 
 pub fn get_settings(settings: &Config, matches: &ArgMatches, arg: &str) -> Result<String> {
   if let Some(value) = matches.get_one::<String>(arg) {
     Ok(value.clone())
+  } else if let Some(profile) = matches.get_one::<String>("profile") {
+    trace!("profile: {profile}");
+    if let Ok(value) = settings.get_string(&format!("profile.{profile}.{arg}")) {
+      Ok(value)
+    } else if let Ok(value) = settings.get_string(arg) {
+      trace!("profile {profile} not found. Fallback to default profile.");
+      Ok(value)
+    } else {
+      bail!("Setting not found")
+    }
   } else if let Ok(value) = settings.get_string(arg) {
     Ok(value)
   } else {
