@@ -132,9 +132,11 @@
 //!
 
 pub mod formatters;
+pub mod impls;
 
 use crate::formatters::identity_formatter;
 pub use crud_pretty_struct_derive::*;
+pub use impls::*;
 use miette::Result;
 use owo_colors::OwoColorize;
 use pad::PadStr;

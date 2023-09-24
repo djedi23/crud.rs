@@ -631,6 +631,7 @@ dependencies = [
  "pad",
  "serde_json",
  "termimad",
+ "unicode-width",
 ]
 
 [[package]]

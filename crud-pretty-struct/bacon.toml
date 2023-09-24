@@ -32,6 +32,18 @@ command = [
 allow_warnings = true
 need_stdout = true
 
+[jobs.test_value]
+command = [
+    "cargo", "test", "--color", "always",
+     "-F", "chrono, humantime, markdown",
+     "value",
+    "--", "--nocapture", "--color", "always", # see https://github.com/Canop/bacon/issues/124
+]
+allow_warnings = true
+need_stdout = true
+
+
+
 [jobs.doc]
 command = ["cargo", "doc", "--color", "always", "--no-deps"]
 need_stdout = false
@@ -64,3 +76,4 @@ allow_warnings = true
 # should go in your personal global prefs.toml file instead.
 [keybindings]
 # alt-m = "job:my-job"
+alt-t = "job:test_value"
