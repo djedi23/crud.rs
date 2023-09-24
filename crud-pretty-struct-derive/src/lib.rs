@@ -5,6 +5,7 @@ use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::quote;
 use strum::Display;
 use syn::{parse, DeriveInput, Expr, GenericArgument, PathArguments, Type};
+use unicode_width::UnicodeWidthStr;
 
 #[derive(Debug, FromDeriveInput)]
 #[darling(attributes(pretty))]
@@ -60,9 +61,9 @@ struct PrettyField {
   /// ```ignore
   /// fn boobool(b: &dyn ToString,_:bool) -> (String,bool) {
   ///     (if b.to_string() == *"true" {
-  /// 	"✔"
+  ///   "✔"
   ///     } else {
-  /// 	"✘"
+  ///   "✘"
   ///     }
   ///      .to_string(),
   ///      true)
@@ -216,7 +217,7 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
   let padding = 1
     + &field_names
       .iter()
-      .map(|n| n.len())
+      .map(|n| n.width())
       .max()
       .unwrap_or_default();
 

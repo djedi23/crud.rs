@@ -22,6 +22,7 @@ proc-macro2 = "1.0"
 derive_builder = "0.12"
 darling = "0.20"
 strum = { version = "0.25", features = ["derive"] }
+unicode-width = "0.1"
 
 [dev-dependencies]
 owo-colors = "3.5"

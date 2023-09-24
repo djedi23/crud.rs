@@ -137,6 +137,7 @@ use crate::formatters::identity_formatter;
 pub use crud_pretty_struct_derive::*;
 use miette::Result;
 use owo_colors::OwoColorize;
+use pad::PadStr;
 
 pub type Formatter = dyn Fn(&dyn ToString, bool) -> Result<(String, bool)>;
 pub enum MetaValue<'a> {
@@ -236,7 +237,6 @@ pub trait PrettyPrint {
     } = self.meta();
 
     let separator = separator.unwrap_or("= ");
-    //    let padding = padding - prefix.len();
     let prefix_ = if let Some(prefix) = &prefix {
       if colored {
         prefix.truecolor(80, 80, 80).to_string()
@@ -262,7 +262,8 @@ pub trait PrettyPrint {
               let formatter = formatter.unwrap_or(&identity_formatter);
               let (value, colored_value) = formatter(value, colored)?;
               Ok(format!(
-                "{prefix_}{label:<padding$}{separator}{}\n",
+                "{prefix_}{}{separator}{}\n",
+                label.pad_to_width(padding),
                 if colored && !colored_value {
                   coloring(value, &color)
                 } else {
@@ -286,7 +287,8 @@ pub trait PrettyPrint {
                   let formatter = formatter.unwrap_or(&identity_formatter);
                   let (value, colored_value) = formatter(value, colored)?;
                   format!(
-                    "{prefix_}{label:<padding$}{separator}{}\n",
+                    "{prefix_}{}{separator}{}\n",
+                    label.pad_to_width(padding),
                     if colored && !colored_value {
                       coloring(value, &color)
                     } else {
@@ -296,7 +298,8 @@ pub trait PrettyPrint {
                 }
                 None => {
                   format!(
-                    "{prefix_}{label:<padding$}{separator}{}\n",
+                    "{prefix_}{}{separator}{}\n",
+                    label.pad_to_width(padding),
                     if colored {
                       "null".magenta().to_string() // TODO: coloring
                     } else {
@@ -316,7 +319,8 @@ pub trait PrettyPrint {
                   String::new()
                 } else {
                   format!(
-                    "{prefix_}{label:<padding$}{separator}{}\n",
+                    "{prefix_}{}{separator}{}\n",
+                    label.pad_to_width(padding),
                     if colored {
                       "null".magenta().to_string() // TODO: coloring
                     } else {

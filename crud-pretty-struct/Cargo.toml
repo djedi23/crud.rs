@@ -21,6 +21,7 @@ chrono = {version = "0.4", default-features=false, features = ["std","serde","cl
 humantime = {version ="2.1", optional = true}
 termimad = {version ="0.20", optional = true}
 bytesize = {version ="1.2", optional = true}
+pad = "0.1"
 
 [dev-dependencies]
 is-terminal = "0.4"
