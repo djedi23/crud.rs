@@ -477,7 +477,7 @@ dependencies = [
 
 [[package]]
 name = "crud"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "clap",
  "crud-api",
@@ -499,7 +499,7 @@ dependencies = [
 
 [[package]]
 name = "crud-api"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "async-trait",
  "base64 0.21.4",
@@ -538,7 +538,7 @@ dependencies = [
 
 [[package]]
 name = "crud-api-derive"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "case",
  "crud-api-endpoint",
@@ -552,7 +552,7 @@ dependencies = [
 
 [[package]]
 name = "crud-api-endpoint"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "clap",
  "crud-api",
@@ -576,7 +576,7 @@ dependencies = [
 
 [[package]]
 name = "crud-auth"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "async-trait",
  "clap",
@@ -586,7 +586,7 @@ dependencies = [
 
 [[package]]
 name = "crud-auth-bearer"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "clap",
  "config",
@@ -598,7 +598,7 @@ dependencies = [
 
 [[package]]
 name = "crud-auth-no-auth"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "clap",
  "config",
@@ -607,7 +607,7 @@ dependencies = [
 
 [[package]]
 name = "crud-derive"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "crud-api-endpoint",
  "darling 0.20.1",
@@ -619,7 +619,7 @@ dependencies = [
 
 [[package]]
 name = "crud-pretty-struct"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "bytesize",
  "chrono",
@@ -636,7 +636,7 @@ dependencies = [
 
 [[package]]
 name = "crud-pretty-struct-derive"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "darling 0.20.1",
  "derive_builder",
@@ -651,7 +651,7 @@ dependencies = [
 
 [[package]]
 name = "crud-tidy-viewer"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "atty",
  "calm_io",

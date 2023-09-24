@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.1.5"></a>
+## [v0.1.5] - 2023-09-24
+### Bug
+- **crud-pretty-struct:** fix padding of labels containing variable size chars (ie emojis).
+
+### Chore
+- **crud-pretty-struct:** clippy
+
+### Feat
+- **crud-api:** generated apps now accepts a `--profile <PROFILE>` arguments. The profiles are stored in `settings.toml` under sections named `[profile.PROFILE]`.
+- **crud-pretty-struct:** `serde_json::Value` implements `PrettyPrint`. `Hashmap<Display,Display>` implements `PrettyPrint` too.
+- **crud-pretty-struct:** duration formatter accepts f64 durations.
+
+
 <a name="v0.1.4"></a>
 ## [v0.1.4] - 2023-07-20
 ### Bug
@@ -52,7 +66,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-12-30
 
-[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.5...HEAD
+[v0.1.5]: https://github.com/djedi23/crud.rs/compare/v0.1.4...v0.1.5
 [v0.1.4]: https://github.com/djedi23/crud.rs/compare/v0.1.3...v0.1.4
 [v0.1.3]: https://github.com/djedi23/crud.rs/compare/v0.1.2...v0.1.3
 [v0.1.2]: https://github.com/djedi23/crud.rs/compare/v0.1.1...v0.1.2

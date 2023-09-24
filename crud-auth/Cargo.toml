@@ -1,6 +1,6 @@
 [package]
 name = "crud-auth"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description= "CLI generator for your API. Auth definition"
 license = "MIT"

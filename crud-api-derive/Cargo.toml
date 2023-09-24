@@ -1,6 +1,6 @@
 [package]
 name = "crud-api-derive"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description= "CLI generator for your API. derive Api implementation"
 license = "MIT"
@@ -18,11 +18,11 @@ path = "src/lib.rs" # required by `cargo readme`
 crud-api-endpoint={version = "0.1", path="../crud-api-endpoint"}
 syn = {version="2.0", features=["extra-traits"]}
 quote = "1.0"
-proc-macro-error = "1.0.4"
-proc-macro2 = "1.0.32"
+proc-macro-error = "1.0"
+proc-macro2 = "1.0"
 derive_builder = "0.12"
 darling = "0.20"
-case = "1.0.0"
+case = "1.0"
 
 [features]
 dump-derives=[]

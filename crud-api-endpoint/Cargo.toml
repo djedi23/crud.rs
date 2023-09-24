@@ -1,6 +1,6 @@
 [package]
 name = "crud-api-endpoint"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description= "CLI generator for your API. Enpoint description"
 license = "MIT"
@@ -19,7 +19,7 @@ quote = "1.0"
 lazy_static = "1.4"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-scratch = "1.0.5"
+scratch = "1.0"
 
 # dev-dependencies for running the doc tests
 [dev-dependencies]
