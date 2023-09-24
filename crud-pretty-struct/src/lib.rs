@@ -138,6 +138,7 @@ pub use crud_pretty_struct_derive::*;
 use miette::Result;
 use owo_colors::OwoColorize;
 use pad::PadStr;
+use std::fmt::Write;
 
 pub type Formatter = dyn Fn(&dyn ToString, bool) -> Result<(String, bool)>;
 pub enum MetaValue<'a> {
@@ -332,17 +333,18 @@ pub trait PrettyPrint {
             }),
             MetaValue::VecString(vec) => Ok(format!(
               "{prefix_}{label} :\n{}",
-              vec
-                .iter()
-                .map(|i| format!(
+              vec.iter().fold(String::new(), |mut output, i| {
+                let _ = write!(
+                  output,
                   " - {}\n",
                   if colored {
                     coloring(i.to_string(), &color)
                   } else {
                     i.to_string()
                   }
-                ))
-                .collect::<String>()
+                );
+                output
+              })
             )),
             MetaValue::VecPretty(vec) => Ok(format!("{prefix_}{label} :\n{}", {
               vec
@@ -366,10 +368,10 @@ pub trait PrettyPrint {
                     match value {
                       Some(vec) => {
                         "\n".to_string()
-                          + &vec
-                            .iter()
-                            .map(|i| format!(" - {}\n", coloring(i.to_string(), &color)))
-                            .collect::<String>()
+                          + &vec.iter().fold(String::new(), |mut output, i| {
+                            let _ = write!(output, " - {}\n", coloring(i.to_string(), &color));
+                            output
+                          })
                       }
                       None => " null\n".magenta().to_string(), // TODO: coloring
                     }
@@ -377,10 +379,10 @@ pub trait PrettyPrint {
                     match value {
                       Some(vec) => {
                         "\n".to_string()
-                          + &vec
-                            .iter()
-                            .map(|i| format!(" - {}\n", i.to_string()))
-                            .collect::<String>()
+                          + &vec.iter().fold(String::new(), |mut output, i| {
+                            let _ = write!(output, " - {}\n", i.to_string());
+                            output
+                          })
                       }
                       None => " null\n".to_string(),
                     }
