@@ -43,13 +43,13 @@ pub fn duration_formatter(value: &dyn ToString, _: bool) -> Result<(String, bool
   use miette::{Context, IntoDiagnostic};
   use std::time::Duration;
 
-  let d = Duration::from_secs(
+  let d = Duration::from_secs_f64(
     value
       .to_string()
       .parse::<f64>()
       .into_diagnostic()
       .with_context(|| format!("Can't parse duration: {}", value.to_string()))?
-      .round() as u64,
+      .abs(),
   );
   Ok((format_duration(d).to_string(), false))
 }
@@ -92,7 +92,17 @@ mod tests {
     use crate::formatters::duration_formatter;
     assert_eq!(
       duration_formatter(&"784.15", false).unwrap(),
-      ("13m 4s".to_string(), false)
+      ("13m 4s 150ms".to_string(), false)
+    );
+  }
+
+  #[test]
+  #[cfg(feature = "humantime")]
+  fn duration_formatter_f64_negative() {
+    use crate::formatters::duration_formatter;
+    assert_eq!(
+      duration_formatter(&"-784.15", false).unwrap(),
+      ("13m 4s 150ms".to_string(), false)
     );
   }
 
