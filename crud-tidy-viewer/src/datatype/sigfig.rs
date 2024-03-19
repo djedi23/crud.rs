@@ -257,21 +257,19 @@ pub fn get_final_string(x: f64, lhs: f64, rhs: f64, neg: bool, sigfig: i64) -> S
 
 #[test]
 fn test_f12345() {
-  let f12345 = vec![12345.0, 1234.50, 123.45, 12.345, 1.2345, 0.12345, 0.0];
-  let test_sigfig = vec![3, 3, 3, 3, 3, 3, 3];
-  let test_neg = vec![false, false, false, false, false, false, false];
-  let test_lhs = vec![12345.0, 1234.0, 123.0, 12.0, 1.0, 0.0, 0.0];
-  let test_rhs = vec![
-    0.0,
+  let f12345 = [12345.0, 1234.50, 123.45, 12.345, 1.2345, 0.12345, 0.0];
+  let test_sigfig = [3, 3, 3, 3, 3, 3, 3];
+  let test_neg = [false, false, false, false, false, false, false];
+  let test_lhs = [12345.0, 1234.0, 123.0, 12.0, 1.0, 0.0, 0.0];
+  let test_rhs = [0.0,
     0.5,
     0.45000000000000284,
     0.34500000000000064,
     0.23449999999999993,
     0.12345,
-    0.0,
-  ];
+    0.0];
   //let test_dec = vec![false, true, true, true, true, true, false];
-  let test_final_string = vec!["12345", "1234.", "123.", "12.3", "1.23", "0.123", "0"];
+  let test_final_string = ["12345", "1234.", "123.", "12.3", "1.23", "0.123", "0"];
 
   for i in 0..f12345.len() {
     let value = f12345[i];
@@ -292,13 +290,13 @@ fn test_f12345() {
 
 #[test]
 fn test_f100() {
-  let f100 = vec![100.0, 10.0, 1.0, 0.1, 0.01, 0.001, 0.0001];
-  let test_sigfig = vec![3, 3, 3, 3, 3, 3, 3];
-  let test_neg = vec![false, false, false, false, false, false, false];
-  let test_lhs = vec![100.0, 10.0, 1.0, 0.0, 0.0, 0.0, 0.0];
-  let test_rhs = vec![0.0, 0.0, 0.0, 0.1, 0.01, 0.001, 0.0001];
+  let f100 = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001, 0.0001];
+  let test_sigfig = [3, 3, 3, 3, 3, 3, 3];
+  let test_neg = [false, false, false, false, false, false, false];
+  let test_lhs = [100.0, 10.0, 1.0, 0.0, 0.0, 0.0, 0.0];
+  let test_rhs = [0.0, 0.0, 0.0, 0.1, 0.01, 0.001, 0.0001];
   //let test_dec = vec![false, false, false, true, true, true, true];
-  let test_final_string = vec!["100", "10", "1", "0.1", "0.01", "0.001", "0.0001"];
+  let test_final_string = ["100", "10", "1", "0.1", "0.01", "0.001", "0.0001"];
 
   for i in 0..f100.len() {
     let value = f100[i];
@@ -321,13 +319,13 @@ fn test_f100() {
 
 #[test]
 fn test_fn100() {
-  let f100 = vec![-100.0, -10.0, -1.0, -0.1, -0.01, -0.001, -0.0001];
-  let test_sigfig = vec![3, 3, 3, 3, 3, 3, 3];
-  let test_neg = vec![true, true, true, true, true, true, true];
-  let test_lhs = vec![100.0, 10.0, 1.0, 0.0, 0.0, 0.0, 0.0];
-  let test_rhs = vec![0.0, 0.0, 0.0, 0.1, 0.01, 0.001, 0.0001];
+  let f100 = [-100.0, -10.0, -1.0, -0.1, -0.01, -0.001, -0.0001];
+  let test_sigfig = [3, 3, 3, 3, 3, 3, 3];
+  let test_neg = [true, true, true, true, true, true, true];
+  let test_lhs = [100.0, 10.0, 1.0, 0.0, 0.0, 0.0, 0.0];
+  let test_rhs = [0.0, 0.0, 0.0, 0.1, 0.01, 0.001, 0.0001];
   //let test_dec = vec![false, false, false, true, true, true, true];
-  let test_final_string = vec!["-100", "-10", "-1", "-0.1", "-0.01", "-0.001", "-0.0001"];
+  let test_final_string = ["-100", "-10", "-1", "-0.1", "-0.01", "-0.001", "-0.0001"];
 
   for i in 0..f100.len() {
     let value = f100[i];
@@ -350,20 +348,18 @@ fn test_fn100() {
 
 #[test]
 fn test_fn12345() {
-  let f12345 = vec![-12345.0, -1234.50, -123.45, -12.345, -1.2345, -0.12345];
-  let test_sigfig = vec![3, 3, 3, 3, 3, 3];
-  let test_neg = vec![true, true, true, true, true, true, true];
-  let test_lhs = vec![12345.0, 1234.0, 123.0, 12.0, 1.0, 0.0];
-  let test_rhs = vec![
-    0.0,
+  let f12345 = [-12345.0, -1234.50, -123.45, -12.345, -1.2345, -0.12345];
+  let test_sigfig = [3, 3, 3, 3, 3, 3];
+  let test_neg = [true, true, true, true, true, true, true];
+  let test_lhs = [12345.0, 1234.0, 123.0, 12.0, 1.0, 0.0];
+  let test_rhs = [0.0,
     0.5,
     0.45000000000000284,
     0.34500000000000064,
     0.23449999999999993,
-    0.12345,
-  ];
+    0.12345];
   //let test_dec = vec![false, true, true, true, true, true];
-  let test_final_string = vec!["-12345", "-1234.", "-123.", "-12.3", "-1.23", "-0.123"];
+  let test_final_string = ["-12345", "-1234.", "-123.", "-12.3", "-1.23", "-0.123"];
 
   for i in 0..f12345.len() {
     let value = f12345[i];
@@ -387,13 +383,13 @@ fn test_long_double() {
   // the `rhs` break on this test. This is intentional
   // This problem led to the creation of `rhs_string_len` which counts
   // length after the final string has been generated.
-  let long_double = vec![-3.33333333, -1.11111111, 3.33333333, 1.11111111];
-  let test_sigfig = vec![3, 3, 3, 3];
-  let test_neg = vec![true, true, false, false];
-  let test_lhs = vec![3.0, 1.0, 3.0, 1.0];
-  let _test_rhs = vec![0.33333333, 0.11111111, 0.33333333, 0.11111111];
+  let long_double = [-3.33333333, -1.11111111, 3.33333333, 1.11111111];
+  let test_sigfig = [3, 3, 3, 3];
+  let test_neg = [true, true, false, false];
+  let test_lhs = [3.0, 1.0, 3.0, 1.0];
+  let _test_rhs = [0.33333333, 0.11111111, 0.33333333, 0.11111111];
   //let test_dec = vec![true, true, true, true];
-  let test_final_string = vec!["-3.33", "-1.11", "3.33", "1.11"];
+  let test_final_string = ["-3.33", "-1.11", "3.33", "1.11"];
 
   for i in 0..long_double.len() {
     let value = long_double[i];
@@ -417,30 +413,18 @@ fn test_norms() {
   // the `rhs` break on this test. This is intentional
   // This problem led to the creation of `rhs_string_len` which counts
   // length after the final string has been generated.
-  let long_double = vec![
-    -0.7949012411113556,
+  let long_double = [-0.7949012411113556,
     1.1597467493978901,
     -0.9527948462413667,
     -1.2055600489348273,
     -0.9964310089596907,
     0.3968466566707523,
     -0.7763342862202715,
-    0.6893169466075251,
-    //-0.8700625714479723,
-  ];
-  let test_sigfig = vec![
-    3, 3, 3, 3, 3, 3, 3, 3,
-    //3
-  ];
-  let test_lhs = vec![
-    0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-    //0.0
-  ];
+    0.6893169466075251];
+  let test_sigfig = [3, 3, 3, 3, 3, 3, 3, 3];
+  let test_lhs = [0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0];
   //let test_dec = vec![true, true, true, true];
-  let test_final_string = vec![
-    "-0.795", "1.16", "-0.953", "-1.21", "-0.996", "0.397", "-0.776", "0.689",
-    //"-0.870",
-  ];
+  let test_final_string = ["-0.795", "1.16", "-0.953", "-1.21", "-0.996", "0.397", "-0.776", "0.689"];
 
   for i in 0..long_double.len() {
     let value = long_double[i];

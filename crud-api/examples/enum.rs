@@ -51,11 +51,15 @@ struct Bstruct {
 #[allow(dead_code)]
 #[derive(Default)]
 enum Enum {
-  #[api(no_short)]
+  #[api(
+    no_short,
+    help = "Follow the white rabbit",
+    long_help = "Follow the white rabbit in the hole"
+  )]
   #[default]
-  A,
-  #[api(no_short)]
-  B(Bstruct),
+  Alice,
+  #[api(no_short, no_long)]
+  Bob(Bstruct),
   // #[api(no_short)]
   // C(u32),
   // #[api(no_short)]
@@ -64,8 +68,8 @@ enum Enum {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-  let e = Enum::A;
-  println!("{e:?}");
+  //  let e = Enum::A;
+  //  println!("{e:?}");
 
   R::run().await
   //  Ok(())

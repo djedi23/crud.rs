@@ -136,7 +136,7 @@ pub mod impls;
 
 use crate::formatters::identity_formatter;
 pub use crud_pretty_struct_derive::*;
-pub use impls::*;
+//pub use impls::*;
 use miette::Result;
 use owo_colors::OwoColorize;
 use pad::PadStr;
@@ -336,9 +336,9 @@ pub trait PrettyPrint {
             MetaValue::VecString(vec) => Ok(format!(
               "{prefix_}{label} :\n{}",
               vec.iter().fold(String::new(), |mut output, i| {
-                let _ = write!(
+                let _ = writeln!(
                   output,
-                  " - {}\n",
+                  " - {}",
                   if colored {
                     coloring(i.to_string(), &color)
                   } else {
@@ -371,7 +371,7 @@ pub trait PrettyPrint {
                       Some(vec) => {
                         "\n".to_string()
                           + &vec.iter().fold(String::new(), |mut output, i| {
-                            let _ = write!(output, " - {}\n", coloring(i.to_string(), &color));
+                            let _ = writeln!(output, " - {}", coloring(i.to_string(), &color));
                             output
                           })
                       }
@@ -382,7 +382,7 @@ pub trait PrettyPrint {
                       Some(vec) => {
                         "\n".to_string()
                           + &vec.iter().fold(String::new(), |mut output, i| {
-                            let _ = write!(output, " - {}\n", i.to_string());
+                            let _ = writeln!(output, " - {}", i.to_string());
                             output
                           })
                       }

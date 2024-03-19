@@ -201,8 +201,6 @@ mod formats;
 pub mod http;
 #[doc(hidden)]
 pub mod settings;
-#[doc(hidden)]
-mod upload;
 
 #[doc(hidden)]
 pub struct ApiInputOptions {

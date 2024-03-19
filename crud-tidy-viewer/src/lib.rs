@@ -79,7 +79,7 @@ impl Default for TableConfig {
   }
 }
 
-pub fn display_table(rdr: &Vec<Vec<String>>, config: TableConfig) {
+pub fn display_table(rdr: &[Vec<String>], config: TableConfig) {
   /*
       This piece of code is copied and refactored from Tidy-viewer (released under public domain)
       Original source: https://github.com/alexhallam/tv
