@@ -11,17 +11,17 @@ repository= "https://github.com/djedi23/crud.rs"
 
 [dependencies]
 # TV
-calm_io = "0.1"
-owo-colors = "3.4"
-unicode-truncate = "0.2"
-lazy_static = "1.4"
-itertools = "0.10"
-regex = "1.5"
-atty = "0.2"
-crossterm = "0.26"
+calm_io = {workspace=true}
+owo-colors = {workspace=true}
+unicode-truncate = {workspace=true}
+lazy_static = {workspace=true}
+itertools = {workspace=true}
+regex = {workspace=true}
+atty = {workspace=true}
+crossterm = {workspace=true}
 # End TV
 
 
 [dev-dependencies]
-miette = { version = "5.9", features = ["fancy"] }
+miette = {workspace=true}
 

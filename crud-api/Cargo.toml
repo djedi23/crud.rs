@@ -10,45 +10,45 @@ repository= "https://github.com/djedi23/crud.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-crud-api-derive = {version = "0.1", path="../crud-api-derive"}
-#crud-api-derive = {version = "0.1", path="../crud-api-derive", features=["dump-derives"]}
-crud-tidy-viewer = {version = "0.1", path="../crud-tidy-viewer"}
-crud-auth = {version = "0.1", path="../crud-auth"}
-crud-pretty-struct = {version = "0.1", path="../crud-pretty-struct"}
-crud-pretty-struct-derive = {version = "0.1", path="../crud-pretty-struct-derive"}
-
-clap = { version = "4.3", features = ["env","unicode","wrap_help","cargo"] }
-clap_complete = "4.3"
-config = "0.13"
-directories = "5.0"
-log = "^0.4"
-pretty_env_logger = "^0.5"
-
-
-async-trait = "0.1"
-hyper = { version = "0.14", features = ["client","http1"] }
-hyper-tls = { version = "0.5" }
-tokio = { version = "1", features = ["full"] }
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-toml = {version="0.7", optional=true}
-serde_yaml = {version= "0.9", optional=true}
-csv = {version="1.1", optional=true}
-serde_qs = "0.12"
-indicatif = "0.17"
-miette = { version = "5.9", features = ["fancy"] }
-thiserror = "1.0"
-owo-colors = "3.4.0"
-regex = "1.6.0"
-base64 = "0.21.0"
+async-trait = {workspace=true}
+base64 = {workspace=true}
+clap = {workspace=true}
+clap_complete = {workspace=true}
+config = {workspace=true}
+crud-api-derive = {workspace=true}
+crud-auth = {workspace=true}
+crud-pretty-struct = {workspace=true}
+crud-tidy-viewer = {workspace=true}
+csv = {workspace=true, optional=true}
+directories = {workspace=true}
+http = {workspace=true}
+http-body-util = {workspace=true}
+hyper = {workspace=true}
+hyper-util = {workspace=true}
+indicatif = {workspace=true}
+log = {workspace=true}
+miette = {workspace=true}
+owo-colors = {workspace=true}
+pki-types = {workspace=true}
+regex = {workspace=true}
+serde = {workspace=true}
+serde_json = {workspace=true}
+serde_qs = {workspace=true}
+serde_yaml = {workspace=true, optional=true}
+thiserror = {workspace=true}
+tokio = {workspace=true}
+tokio-rustls = {workspace=true}
+toml = {workspace=true, optional=true}
+webpki-roots = {workspace=true}
 
 [dev-dependencies]
-crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
-crud-auth-bearer = {version = "0.1", path="../crud-auth-bearer"}
-chrono = { version = "0.4", default-features = false, features = ["std","serde"] }
-openssl = { version = "0.10",  features = ["vendored"] }
-serde_repr = "0.1"
-is-terminal = "0.4"
+chrono = {workspace=true}
+crud-auth-bearer = {workspace=true}
+crud-auth-no-auth = {workspace=true}
+is-terminal = {workspace=true}
+openssl = {workspace=true}
+pretty_env_logger = {workspace=true}
+serde_repr = {workspace=true}
 
 
 [features]

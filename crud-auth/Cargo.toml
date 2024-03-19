@@ -10,7 +10,7 @@ repository= "https://github.com/djedi23/crud.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-trait = "0.1"
-miette = { version = "5.9", features = ["fancy"] }
-clap = {version="4.3",features=["cargo","env","unicode"]}
-config = "0.13"
+async-trait = {workspace=true}
+clap = {workspace=true}
+config = {workspace=true}
+

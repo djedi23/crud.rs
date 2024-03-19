@@ -14,16 +14,16 @@ path = "src/lib.rs" # required by `cargo readme`
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-crud-pretty-struct-derive = {version = "0.1", path="../crud-pretty-struct-derive"}
-owo-colors = "3.5"
-miette = { version = "5.9", features = ["fancy"] }
-chrono = {version = "0.4", default-features=false, features = ["std","serde","clock"], optional = true}
-humantime = {version ="2.1", optional = true}
-termimad = {version ="0.20", optional = true}
-bytesize = {version ="1.2", optional = true}
-serde_json = "1.0"
-unicode-width = "0.1"
-pad = "0.1"
+crud-pretty-struct-derive = {workspace=true}
+owo-colors = {workspace=true}
+miette = {workspace=true}
+chrono = {workspace=true, optional = true}
+humantime = {workspace=true, optional = true}
+termimad = {workspace=true, optional = true}
+bytesize = {workspace=true, optional = true}
+serde_json = {workspace=true}
+unicode-width = {workspace=true}
+pad = {workspace=true}
 
 [dev-dependencies]
 is-terminal = "0.4"

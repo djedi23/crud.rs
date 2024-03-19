@@ -12,28 +12,26 @@ repository= "https://github.com/djedi23/crud.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-#crud-derive = {version = "0.1", path="../crud-derive", features=["dump-derives"]}
-crud-derive = {version = "0.1", path="../crud-derive"}
-crud-api = {version = "0.1", path="../crud-api"}
-#crud-api-derive = {version = "0.1", path="../crud-api-derive", features=["dump-derives"]}
-crud-api-derive = {version = "0.1", path="../crud-api-derive"}
-crud-auth = {version = "0.1", path="../crud-auth"}
+crud-derive = {workspace=true}
+crud-api = {workspace=true}
+#crud-api-derive = {workspace=true}
+crud-api-derive = {workspace=true}
+crud-auth = {workspace=true}
 
 [dev-dependencies]
-crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
-crud-auth-bearer = {version = "0.1", path="../crud-auth-bearer"}
-crud-pretty-struct = {version = "0.1", path="../crud-pretty-struct"}
-openssl = { version = "0.10", features = ["vendored"] }
+crud-auth-no-auth = {workspace=true}
+crud-auth-bearer = {workspace=true}
+crud-pretty-struct = {workspace=true}
+openssl = {workspace=true}
 
-miette = { version = "5.9", features = ["fancy"] }
-log = "^0.4"
-pretty_env_logger = "^0.5"
-tokio = { version = "1", features = ["full"] }
-serde = { version = "1.0", features = ["derive"] }
-hyper = { version = "0.14", features = ["client","http1"] }
-clap = { version = "4.3", features = ["color","cargo","env","suggestions","unicode"] }
-serde_yaml = {version= "0.9"}
-
+miette = {workspace=true}
+log = {workspace=true}
+pretty_env_logger = {workspace=true}
+tokio = {workspace=true}
+serde = {workspace=true}
+hyper = {workspace=true}
+clap = {workspace=true}
+serde_yaml = {workspace=true}
 
 [[example]]
 name="jsonplaceholder"

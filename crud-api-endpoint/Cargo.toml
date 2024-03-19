@@ -10,24 +10,26 @@ repository= "https://github.com/djedi23/crud.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-syn = {version="2.0", features=["extra-traits"]}
-derive_builder = "0.12"
-darling = "0.20"
-proc-macro-error = "1.0"
-proc-macro2 = "1.0"
-quote = "1.0"
-lazy_static = "1.4"
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-scratch = "1.0"
+syn = {workspace=true}
+derive_builder = {workspace=true}
+darling = {workspace=true}
+proc-macro-error = {workspace=true}
+proc-macro2 = {workspace=true}
+quote = {workspace=true}
+lazy_static = {workspace=true}
+serde_json = {workspace=true}
+serde = {workspace=true}
+scratch = {workspace=true}
+
 
 # dev-dependencies for running the doc tests
 [dev-dependencies]
-crud-api = {version = "0.1", path="../crud-api"}
-crud-auth-no-auth = {version = "0.1", path="../crud-auth-no-auth"}
-crud-auth = {version = "0.1", path="../crud-auth"}
-clap = { version = "4.3", features = ["color","cargo","env","suggestions","unicode"] }
-log = "^0.4"
-pretty_env_logger = "^0.5"
-miette = { version = "5.9", features = ["fancy"] }
-openssl = { version = "0.10", features = ["vendored"] }
+crud-api = {workspace=true}
+crud-auth-no-auth = {workspace=true}
+crud-auth = {workspace=true}
+clap = {workspace=true}
+log = {workspace=true}
+pretty_env_logger = {workspace=true}
+miette = {workspace=true}
+openssl = {workspace=true}
+
