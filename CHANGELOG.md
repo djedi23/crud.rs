@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v0.1.6"></a>
+## [v0.1.6] - 2024-03-19
+### Chore
+- run cargo clippy
+- centralize and update the dependencies
+
+### Feat
+- **crud-api:** refactoring http client to hyper v1
+
+
 <a name="v0.1.5"></a>
 ## [v0.1.5] - 2023-09-24
 ### Bug
@@ -66,7 +76,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-12-30
 
-[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.6...HEAD
+[v0.1.6]: https://github.com/djedi23/crud.rs/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/djedi23/crud.rs/compare/v0.1.4...v0.1.5
 [v0.1.4]: https://github.com/djedi23/crud.rs/compare/v0.1.3...v0.1.4
 [v0.1.3]: https://github.com/djedi23/crud.rs/compare/v0.1.2...v0.1.3

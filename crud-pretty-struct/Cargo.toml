@@ -1,6 +1,6 @@
 [package]
 name = "crud-pretty-struct"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description= "Pretty display for struct"
 license = "MIT"
