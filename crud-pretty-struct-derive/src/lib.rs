@@ -112,7 +112,7 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
   let glyph = pretty.separator_glyph.unwrap_or_else(|| "= ".to_string());
 
   let field_names: Vec<String> = match &pretty.data {
-    Data::Enum(_) => todo!(),
+    Data::Enum(_) => unreachable!(),
     Data::Struct(strct) => strct
       .fields
       .iter()
@@ -127,7 +127,7 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
   };
 
   let colors: Vec<proc_macro2::TokenStream> = match &pretty.data {
-    Data::Enum(_) => todo!(),
+    Data::Enum(_) => unreachable!(),
     Data::Struct(strct) => strct
       .fields
       .iter()
@@ -143,7 +143,7 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
   };
 
   let label_colors: Vec<proc_macro2::TokenStream> = match &pretty.data {
-    Data::Enum(_) => todo!(),
+    Data::Enum(_) => unreachable!(),
     Data::Struct(strct) => strct
       .fields
       .iter()
@@ -159,7 +159,7 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
   };
 
   let values_expr: Vec<proc_macro2::TokenStream> = match pretty.data {
-    Data::Enum(_) => todo!(),
+    Data::Enum(_) => unreachable!(),
     Data::Struct(strct) => strct
       .fields
       .into_iter()

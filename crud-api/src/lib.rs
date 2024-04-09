@@ -1,22 +1,22 @@
 //! # Crud Api
-//! 
+//!
 //! This crate provides a framework to generate an executable to manipulate your HTTP API from CLI.
-//! 
+//!
 //! The apps using this lib can replace your _curl_ queries when you need to access to your favorite API.
-//! 
+//!
 //! ## Features
-//! 
+//!
 //! API:
 //! - data are encoded in JSON. It don't support XML, grpc, ...
 //! - output can be formated on json, yaml, toml, csv or tsv
 //! - output stream on stdout or in a file
-//! 
-//! 
+//!
+//!
 //! ## Tutorial
-//! 
+//!
 //! Let's create an CLI for [jsonplaceholder](http://jsonplaceholder.typicode.com/) API.
 //! For the impatients, the whole code of this example can be found in [`examples/jsonplaceholder_api.rs`](./examples/jsonplaceholder_api.rs "jsonplaceholder_api.rs")
-//! 
+//!
 //! First add these dependencies to `Cargo.toml`:
 //! ```toml
 //! [dependencies]
@@ -34,7 +34,7 @@
 //! # To force static openssl
 //! openssl = { version = "0.10", features = ["vendored"] }
 //! ```
-//! 
+//!
 //! Now, create a minimal runner stucture and a `main` function.
 //! `ApiRun` on `JSONPlaceHolder` derives all the CLI.
 //! ```rust
@@ -42,10 +42,10 @@
 //! use crud_auth::CrudAuth;
 //! use crud_auth_no_auth::Auth;
 //! use miette::{IntoDiagnostic, Result};
-//! 
+//!
 //! #[derive(ApiRun)]
 //! struct JSONPlaceHolder;
-//! 
+//!
 //! #[tokio::main]
 //! async fn main() -> Result<()> {
 //!   JSONPlaceHolder::run().await
@@ -84,13 +84,13 @@
 //!   body: String,
 //! }
 //! ```
-//! 
+//!
 //! Now, we can declare the endpoint.
 //! The minimal parameters are:
 //! - `route`, the target api route.
 //! - `cli_route`, the route transcipted as cli arguments. Each slash separate a subcommand.
 //! The other parameters can found in [`crud_api_endpoint::Api`] and [`crud_api_endpoint::Enpoint`] structs documentation.
-//! 
+//!
 //! ```rust
 //! # use serde::{Deserialize, Serialize};
 //! use crud_api::Api;
@@ -110,15 +110,15 @@
 //! }
 //! ```
 //! We can create more complex enpoint. Let's create an edit route.
-//! 
+//!
 //! - The `route` parameter takes a post's `id` argument. This argument should be present in the `cli_route`.
 //! - the HTTP method is set with the `method` parameter.
 //! - Some help can be provided via the parameters `cli_help` and `cli_long_help`.
 //! - the payload is described by the struct declared with the `payload_struct`. The query parameter can be add with the `query_struct` parameter.
-//! 
+//!
 //! In this step, the payload structure is `PostCreate` (the same structure is used for both creation and update). `PostCreate` derives `ApiInput`. All `PostCreate` fields parameters are describe in the [`crud_api_endpoint::ApiInputConfig`] structs.
-//! 
-//! 
+//!
+//!
 //! ```rust
 //! # use serde::{Deserialize, Serialize};
 //! use crud_api::{Api, ApiInput};
@@ -144,7 +144,7 @@
 //!   title: String,
 //!   body: String,
 //! }
-//! 
+//!
 //! #[derive(Debug, ApiInput, Default, Serialize, Deserialize)]
 //! #[allow(dead_code, non_snake_case)]
 //! struct PostCreate {
@@ -156,19 +156,19 @@
 //!   body: String,
 //! }
 //! ```
-//! 
+//!
 //! ## Output Customization
-//! 
+//!
 //! ### Tables
-//! 
+//!
 //! Results arrays are formatted using the crate [`crud-tidy-viewer`](crud_tidy_viewer).
 //! The available table column options are:
 //! - [`table_skip`](../crud_api_endpoint/struct.ApiField.html#structfield.table_skip): don't display this field in the table.
 //! - [`table_format`](../crud_api_endpoint/struct.ApiField.html#structfield.table_format): format this field in table.
 //!   - date formatter: `date(format = "%Y-%m-%d %H:%M:%S")`
-//! 
+//!
 //! ### Pretty Structures
-//! 
+//!
 //! The crate [`crud-pretty-struct`](crud_pretty_struct) can format a single (json) struct.
 
 use async_trait::async_trait;
@@ -184,10 +184,7 @@ pub use formats::{
 };
 use miette::{IntoDiagnostic, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{
-  fmt::Debug,
-  marker::{PhantomData, Sized},
-};
+use std::{fmt::Debug, marker::PhantomData};
 
 extern crate crud_api_derive;
 #[doc(hidden)]

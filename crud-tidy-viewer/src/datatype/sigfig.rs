@@ -261,13 +261,15 @@ fn test_f12345() {
   let test_sigfig = [3, 3, 3, 3, 3, 3, 3];
   let test_neg = [false, false, false, false, false, false, false];
   let test_lhs = [12345.0, 1234.0, 123.0, 12.0, 1.0, 0.0, 0.0];
-  let test_rhs = [0.0,
+  let test_rhs = [
+    0.0,
     0.5,
     0.45000000000000284,
     0.34500000000000064,
     0.23449999999999993,
     0.12345,
-    0.0];
+    0.0,
+  ];
   //let test_dec = vec![false, true, true, true, true, true, false];
   let test_final_string = ["12345", "1234.", "123.", "12.3", "1.23", "0.123", "0"];
 
@@ -352,12 +354,14 @@ fn test_fn12345() {
   let test_sigfig = [3, 3, 3, 3, 3, 3];
   let test_neg = [true, true, true, true, true, true, true];
   let test_lhs = [12345.0, 1234.0, 123.0, 12.0, 1.0, 0.0];
-  let test_rhs = [0.0,
+  let test_rhs = [
+    0.0,
     0.5,
     0.45000000000000284,
     0.34500000000000064,
     0.23449999999999993,
-    0.12345];
+    0.12345,
+  ];
   //let test_dec = vec![false, true, true, true, true, true];
   let test_final_string = ["-12345", "-1234.", "-123.", "-12.3", "-1.23", "-0.123"];
 
@@ -413,18 +417,22 @@ fn test_norms() {
   // the `rhs` break on this test. This is intentional
   // This problem led to the creation of `rhs_string_len` which counts
   // length after the final string has been generated.
-  let long_double = [-0.7949012411113556,
+  let long_double = [
+    -0.7949012411113556,
     1.1597467493978901,
     -0.9527948462413667,
     -1.2055600489348273,
     -0.9964310089596907,
     0.3968466566707523,
     -0.7763342862202715,
-    0.6893169466075251];
+    0.6893169466075251,
+  ];
   let test_sigfig = [3, 3, 3, 3, 3, 3, 3, 3];
   let test_lhs = [0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0];
   //let test_dec = vec![true, true, true, true];
-  let test_final_string = ["-0.795", "1.16", "-0.953", "-1.21", "-0.996", "0.397", "-0.776", "0.689"];
+  let test_final_string = [
+    "-0.795", "1.16", "-0.953", "-1.21", "-0.996", "0.397", "-0.776", "0.689",
+  ];
 
   for i in 0..long_double.len() {
     let value = long_double[i];

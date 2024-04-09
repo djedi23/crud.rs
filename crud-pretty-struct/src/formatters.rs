@@ -25,15 +25,13 @@ pub fn bool_check_formatter(b: &dyn ToString, colored: bool) -> Result<(String, 
 
 #[cfg(feature = "chrono")]
 pub fn timestamp_formatter(value: &dyn ToString, _: bool) -> Result<(String, bool)> {
-  use chrono::{DateTime, FixedOffset, Local, NaiveDateTime};
+  use chrono::{FixedOffset, NaiveDateTime};
   use miette::{miette, Context, IntoDiagnostic};
   let d = NaiveDateTime::parse_from_str(value.to_string().as_str(), "%s")
     .into_diagnostic()
-    .with_context(|| format!("Can't parse timestamps: {}", value.to_string()))?;
-  let d: DateTime<Local> = DateTime::from_local(
-    d,
-    FixedOffset::east_opt(0).ok_or(miette!("Can't create timezone"))?,
-  );
+    .with_context(|| format!("Can't parse timestamps: {}", value.to_string()))?
+    .and_local_timezone(FixedOffset::east_opt(0).ok_or(miette!("Can't create timezone"))?)
+    .unwrap();
   Ok((d.to_string(), false))
 }
 
