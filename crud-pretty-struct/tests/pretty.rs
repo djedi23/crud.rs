@@ -598,3 +598,152 @@ fn skip_none_nested_option_vec_struct() {
     "a = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n".to_string()
   );
 }
+
+#[test]
+fn simple_enum() {
+  #[derive(PrettyPrint)]
+  enum E {
+    AA,
+    BB,
+  }
+
+  let s = E::AA;
+  assert_eq!(s.pretty(false, None).unwrap(), "AA\n".to_string());
+
+  let s = E::BB;
+  assert_eq!(s.pretty(false, None).unwrap(), "BB\n".to_string());
+}
+
+#[test]
+fn simple_enum_in_struct() {
+  #[derive(PrettyPrint)]
+  enum E {
+    AA,
+    BB,
+  }
+
+  #[derive(PrettyPrint)]
+  struct S {
+    a: u32,
+    #[pretty(is_pretty)]
+    b: E,
+    #[pretty(is_pretty)]
+    bb: E,
+    c: u32,
+  }
+
+  let s = S {
+    a: 1,
+    b: E::AA,
+    bb: E::BB,
+    c: 3,
+  };
+
+  assert_eq!(
+    s.pretty(false, None).unwrap(),
+    "a  = 1\nb  = AA\nbb = BB\nc  = 3\n".to_string()
+  );
+}
+
+#[test]
+fn vec_enum_in_struct() {
+  #[derive(PrettyPrint)]
+  enum E {
+    AA,
+    BB,
+  }
+
+  #[derive(PrettyPrint)]
+  struct S {
+    a: u32,
+    #[pretty(is_pretty)]
+    b: Vec<E>,
+    c: u32,
+  }
+
+  let s = S {
+    a: 1,
+    b: vec![E::AA, E::BB],
+    c: 3,
+  };
+
+  assert_eq!(
+    s.pretty(false, None).unwrap(),
+    "a = 1\nb :\n - AA\n - BB\nc = 3\n".to_string()
+  );
+}
+
+#[test]
+fn option_vec_enum_in_struct() {
+  #[derive(PrettyPrint)]
+  enum E {
+    AA,
+    BB,
+  }
+
+  #[derive(PrettyPrint)]
+  struct S {
+    a: u32,
+    #[pretty(is_pretty)]
+    b: Option<Vec<E>>,
+    c: u32,
+  }
+
+  let s = S {
+    a: 1,
+    b: Some(vec![E::AA, E::BB]),
+    c: 3,
+  };
+
+  assert_eq!(
+    s.pretty(false, None).unwrap(),
+    "a = 1\nb :\n - AA\n - BB\nc = 3\n".to_string()
+  );
+
+  let s = S {
+    a: 1,
+    b: None,
+    c: 3,
+  };
+
+  assert_eq!(
+    s.pretty(false, None).unwrap(),
+    "a = 1\nb : null\nc = 3\n".to_string()
+  );
+}
+
+#[test]
+fn tuple_enum() {
+  #[derive(PrettyPrint)]
+  struct St {
+    aa: u32,
+    cc: u32,
+  }
+
+  #[derive(PrettyPrint)]
+  enum E {
+    AA(St),
+  }
+
+  let s = E::AA(St { aa: 2, cc: 4 });
+  assert_eq!(
+    s.pretty(false, None).unwrap(),
+    "aa = 2\ncc = 4\n".to_string()
+  );
+}
+
+#[test]
+fn enum_with_label() {
+  #[derive(PrettyPrint)]
+  enum E {
+    AA,
+    #[pretty(label = "My Label")]
+    BB,
+  }
+
+  let s = E::AA;
+  assert_eq!(s.pretty(false, None).unwrap(), "AA\n".to_string());
+
+  let s = E::BB;
+  assert_eq!(s.pretty(false, None).unwrap(), "My Label\n".to_string());
+}

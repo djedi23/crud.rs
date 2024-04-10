@@ -25,6 +25,10 @@ unicode-width = {workspace=true}
 
 [dev-dependencies]
 owo-colors = {workspace=true}
+crud-pretty-struct = {path="../crud-pretty-struct"}
+miette = {workspace=true}
+
+
 
 [features]
 dump-derives=[]

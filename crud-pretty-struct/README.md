@@ -1,13 +1,13 @@
 ## Pretty Struct
 
-Displays (json) structures in a pretty way.
+Displays (json) structures and enums in a pretty way.
 
 This crate is linked to the crud library. If I have time and motivation to generalize it, it can be an indenpendant crate.
 
 ### Example
 
 ```rust
-use crud_pretty_struct_derive::PrettyPrint;
+use crud_pretty_struct::PrettyPrint;
 #[derive(PrettyPrint)]
 struct Foo {
     #[pretty(color="green")]
@@ -19,6 +19,8 @@ struct Foo {
     #[pretty(is_pretty)]
     d: OtherPrettyStruct
 }
+// Instanciate a `var` of type  `Foo`
+println!("{}",var.pretty(true,None).expect("Can prettify var"));
 ```
 
 ### Field Options
@@ -120,4 +122,33 @@ struct Foo {
     field: f32
 }
 ```
+
+### Enum Option
+
+Limitations on enums:
+- unit variants are supported
+- tuple variants with only 1 argument are supported
+
+###### `color`
+
+custom color for this variant avaiable colors are [Color].
+```rust
+#[derive(PrettyPrint)]
+enum Foo {
+    #[pretty(color="red")]
+    Variant
+}
+```
+
+###### `label`
+
+custom label for this variant
+```rust
+#[derive(PrettyPrint)]
+enum Foo {
+    #[pretty(label="☀️ my field")]
+    Variant
+}
+```
+
 

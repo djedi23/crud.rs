@@ -16,7 +16,7 @@ struct PrettyStruct {
   separator_glyph: Option<String>,
 }
 
-#[derive(Debug, FromMeta, Display)]
+#[derive(Debug, Clone, FromMeta, Display)]
 enum Color {
   Black,
   Blue,
@@ -40,7 +40,7 @@ struct PrettyField {
   label: Option<String>,
   /// Value color.
   color: Option<Color>,
-  /// Label color.
+  /// Specific label when color is on.
   label_color: Option<Color>,
   /// Skip this field. Don't display it.
   #[darling(default)]
@@ -75,13 +75,17 @@ struct PrettyField {
   formatter: Option<Expr>,
 }
 
-#[derive(Debug, FromVariant)]
+#[derive(Debug, Clone, FromVariant)]
 #[darling(attributes(pretty))]
 struct PrettyVariant {
-  //  ident: Ident,
+  ident: Ident,
   //  discriminant: Option<syn::Expr>,
-  // fields: darling::ast::Fields<Type>,
+  fields: darling::ast::Fields<Type>,
   //  attrs: Vec<syn::Attribute>,
+  /// Value color.
+  color: Option<Color>,
+  /// Ddisplay this label instead of the variant name. You can use it only on Unit variants.
+  label: Option<String>,
 }
 
 /// The struct can be pretty printed.
@@ -108,6 +112,17 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
   let ast: DeriveInput = parse(input).unwrap();
   let pretty = PrettyStruct::from_derive_input(&ast).unwrap();
   //  dbg!(&pretty.data);
+
+  let out = match &pretty.data {
+    Data::Enum(_) => derive_enum(pretty),
+    Data::Struct(_) => derive_struct(pretty),
+  };
+  #[cfg(feature = "dump-derives")]
+  println!("{}", out);
+  out
+}
+
+fn derive_struct(pretty: PrettyStruct) -> TokenStream {
   let pretty_ident = pretty.ident;
   let glyph = pretty.separator_glyph.unwrap_or_else(|| "= ".to_string());
 
@@ -131,7 +146,7 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
     Data::Struct(strct) => strct
       .fields
       .iter()
-      .filter(|&f| !f.skip)
+      //    .filter(|&f| !f.skip)
       .map(|field| match &field.color {
         Some(color) => {
           let color = Ident::new(&color.to_string(), Span::call_site());
@@ -221,28 +236,178 @@ pub fn pretty_struct_derive(input: TokenStream) -> TokenStream {
       .max()
       .unwrap_or_default();
 
-  let out = quote!(impl crud_pretty_struct::PrettyPrint for #pretty_ident {
+  quote!(impl crud_pretty_struct::PrettyPrint for #pretty_ident {
+  fn meta(&self) ->crud_pretty_struct::Meta {
+      crud_pretty_struct::Meta {
+    padding: #padding,
+    separator: Some(#glyph),
+    fields: vec![
+        #(
+      crud_pretty_struct::MetaField {
+          field_prefix: crud_pretty_struct::FieldPrefix::Label {
+        label: #field_names,
+        label_color: #label_colors,
+          },
+          color: #colors,
+          value: #values_expr,
+      }
+        ),*
+    ]
+      }
+  }
+    })
+  .into()
+}
+
+fn derive_enum(pretty: PrettyStruct) -> TokenStream {
+  let pretty_ident = pretty.ident;
+
+  let colors: Vec<proc_macro2::TokenStream> = match &pretty.data {
+    Data::Enum(enm) => vec![{
+      let enum_ident: Vec<Ident> = enm
+        .clone()
+        .into_iter()
+        .map(|_variant| pretty_ident.clone())
+        .collect();
+      let variant_ident: Vec<Ident> = enm
+        .clone()
+        .into_iter()
+        .map(|variant| variant.ident)
+        .collect();
+      let variant_param: Vec<proc_macro2::TokenStream> = enm
+        .clone()
+        .into_iter()
+        .map(|variant| match variant.fields.style {
+          darling::ast::Style::Unit => quote!(),
+          darling::ast::Style::Tuple => quote! {(value)}, // TODO: itérer sur tous les champs
+          darling::ast::Style::Struct => unimplemented!(),
+        })
+        .collect();
+
+      let variant_color: Vec<proc_macro2::TokenStream> = enm
+        .iter()
+        .map(|variant| match &variant.color {
+          Some(color) => {
+            let color = Ident::new(&color.to_string(), Span::call_site());
+            quote!(Some(crud_pretty_struct::Color::#color))
+          }
+          None => quote!(None),
+        })
+        .collect();
+
+      quote!(match self {
+            #(#enum_ident::#variant_ident #variant_param => #variant_color),*
+              }
+      )
+    }],
+    Data::Struct(_) => unreachable!(),
+  };
+
+  let field_prefix: Vec<proc_macro2::TokenStream> = match &pretty.data {
+    Data::Enum(enm) => vec![{
+      let enum_ident: Vec<Ident> = enm
+        .clone()
+        .into_iter()
+        .map(|_variant| pretty_ident.clone())
+        .collect();
+      let variant_ident: Vec<Ident> = enm
+        .clone()
+        .into_iter()
+        .map(|variant| variant.ident)
+        .collect();
+      let variant_param: Vec<proc_macro2::TokenStream> = enm
+        .clone()
+        .into_iter()
+        .map(|variant| match variant.fields.style {
+          darling::ast::Style::Unit => quote!(),
+          darling::ast::Style::Tuple => quote! {(value)}, // TODO: itérer sur tous les champs
+          darling::ast::Style::Struct => unimplemented!(),
+        })
+        .collect();
+
+      let variant_prefix: Vec<proc_macro2::TokenStream> = enm
+        .iter()
+        .map(|variant| match variant.fields.style {
+          darling::ast::Style::Unit => {
+            quote!(crud_pretty_struct::FieldPrefix::None)
+          }
+          darling::ast::Style::Tuple => {
+            quote! {crud_pretty_struct::FieldPrefix::Multiline}
+          } // TODO: itérer sur tous les champs
+          darling::ast::Style::Struct => unimplemented!(),
+        })
+        .collect();
+
+      quote!(match self {
+            #(#enum_ident::#variant_ident #variant_param => #variant_prefix),*
+              }
+      )
+    }],
+    Data::Struct(_) => unreachable!(),
+  };
+
+  let values_expr: Vec<proc_macro2::TokenStream> = match pretty.data {
+    Data::Enum(enm) => vec![{
+      let enum_ident: Vec<Ident> = enm
+        .clone()
+        .into_iter()
+        .map(|_variant| pretty_ident.clone())
+        .collect();
+      let variant_ident: Vec<Ident> = enm
+        .clone()
+        .into_iter()
+        .map(|variant| variant.ident)
+        .collect();
+      let variant_param: Vec<proc_macro2::TokenStream> = enm
+        .clone()
+        .into_iter()
+        .map(|variant| match variant.fields.style {
+          darling::ast::Style::Unit => quote!(),
+          darling::ast::Style::Tuple => quote! {(value)}, // TODO: itérer sur tous les champs
+          darling::ast::Style::Struct => unimplemented!(),
+        })
+        .collect();
+
+      let variant_value: Vec<proc_macro2::TokenStream> = enm
+        .into_iter()
+        .map(|variant| match variant.fields.style {
+          darling::ast::Style::Unit => {
+            let value_str = if let Some(label) = variant.label {
+              label
+            } else {
+              variant.ident.to_string()
+            };
+            quote!(crud_pretty_struct::MetaValue::Variant{value:&#value_str, formatter:None})
+          }
+          darling::ast::Style::Tuple => quote! {crud_pretty_struct::MetaValue::Pretty(value)}, // TODO: itérer sur tous les champs
+          darling::ast::Style::Struct => unimplemented!(),
+        })
+        .collect();
+      quote!(match self {
+      #(#enum_ident::#variant_ident #variant_param => #variant_value),*
+        })
+    }],
+    Data::Struct(_) => unreachable!(),
+  };
+
+  quote!(impl crud_pretty_struct::PrettyPrint for #pretty_ident {
       fn meta(&self) ->crud_pretty_struct::Meta {
-	  crud_pretty_struct::Meta {
-              padding: #padding,
-              separator: Some(#glyph),
+    crud_pretty_struct::Meta {
+              padding: 0,
+              separator: None,
               fields: vec![
-		  #(
-		      crud_pretty_struct:: MetaField {
-			  label: #field_names,
-			  color: #colors,
-			  label_color: #label_colors,
-			  value: #values_expr,
-		      }
-		  ),*
+      #(
+          crud_pretty_struct:: MetaField {
+        field_prefix: #field_prefix,
+        color: #colors,
+        value: #values_expr,
+          }
+      ),*
               ]
-	  }
+    }
       }
   })
-  .into();
-  #[cfg(feature = "dump-derives")]
-  println!("{}", out);
-  out
+  .into()
 }
 
 fn is_vec(ty: &Type) -> bool {

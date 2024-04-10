@@ -1,15 +1,15 @@
 //! # Pretty Struct
 //!
-//! Displays (json) structures in a pretty way.
+//! Displays (json) structures and enums in a pretty way.
 //!
 //! This crate is linked to the crud library. If I have time and motivation to generalize it, it can be an indenpendant crate.
 //!
 //! ## Example
 //!
 //! ```rust
-//! use crud_pretty_struct_derive::PrettyPrint;
+//! use crud_pretty_struct::PrettyPrint;
 //! # #[derive(PrettyPrint)]
-//! # struct OtherPrettyStruct {}
+//! # struct OtherPrettyStruct {val:u32}
 //! #[derive(PrettyPrint)]
 //! struct Foo {
 //!     #[pretty(color="green")]
@@ -21,6 +21,9 @@
 //!     #[pretty(is_pretty)]
 //!     d: OtherPrettyStruct
 //! }
+//! # let var = Foo{a:0,b:None,c:false,d:OtherPrettyStruct{val:0}};
+//! // Instanciate a `var` of type  `Foo`
+//! println!("{}",var.pretty(true,None).expect("Can prettify var"));
 //! ```
 //!
 //! ## Field Options
@@ -130,7 +133,37 @@
 //! }
 //! ```
 //!
-
+//! ## Enum Option
+//!
+//! Limitations on enums:
+//! - unit variants are supported
+//! - tuple variants with only 1 argument are supported
+//!
+//! ##### `color`
+//!
+//! custom color for this variant avaiable colors are [Color].
+//! ```rust
+//! # use crud_pretty_struct_derive::PrettyPrint;
+//! #[derive(PrettyPrint)]
+//! enum Foo {
+//!     #[pretty(color="red")]
+//!     Variant
+//! }
+//! ```
+//!
+//! ##### `label`
+//!
+//! custom label for this variant
+//! ```rust
+//! # use crud_pretty_struct_derive::PrettyPrint;
+//! #[derive(PrettyPrint)]
+//! enum Foo {
+//!     #[pretty(label="☀️ my field")]
+//!     Variant
+//! }
+//! ```
+//!
+//!
 pub mod formatters;
 pub mod impls;
 
@@ -168,8 +201,13 @@ pub enum MetaValue<'a> {
     value: Option<Vec<&'a dyn PrettyPrint>>,
     skip_none: bool,
   },
+  Variant {
+    value: &'a dyn ToString,
+    formatter: Option<&'a Formatter>,
+  },
 }
 
+#[derive(PartialEq)]
 pub enum Color {
   Black,
   Blue,
@@ -181,10 +219,19 @@ pub enum Color {
   Yellow,
 }
 
+#[derive(PartialEq)]
+pub enum FieldPrefix<'a> {
+  Label {
+    label: &'a str,
+    label_color: Option<Color>,
+  },
+  Multiline,
+  None,
+}
+
 pub struct MetaField<'a> {
-  pub label: &'a str,
+  pub field_prefix: FieldPrefix<'a>,
   pub color: Option<Color>,
-  pub label_color: Option<Color>,
   pub value: MetaValue<'a>,
 }
 
@@ -254,42 +301,187 @@ pub trait PrettyPrint {
       .into_iter()
       .map(
         |MetaField {
-           label,
-           value,
+           field_prefix,
            color,
-           label_color,
+           value,
          }| {
-          let label = label_coloring(label, colored, &label_color);
-          match value {
-            MetaValue::String { value, formatter } => {
-              let formatter = formatter.unwrap_or(&identity_formatter);
-              let (value, colored_value) = formatter(value, colored)?;
-              Ok(format!(
-                "{prefix_}{}{separator}{}\n",
-                label.pad_to_width(padding),
-                if colored && !colored_value {
-                  coloring(value, &color)
-                } else {
-                  value
-                }
-              ))
-            }
-            MetaValue::Pretty(value) => Ok(format!(
-              "{prefix_}{label} -->\n{}",
-              value.pretty(colored, Some(prefix.clone() + "| "))?
-            )),
-            MetaValue::OptionString {
-              value,
-              formatter,
-              skip_none,
-            } => Ok(if value.is_none() && skip_none {
-              String::new()
-            } else {
+          match field_prefix {
+            FieldPrefix::None | FieldPrefix::Multiline => {
               match value {
-                Some(value) => {
+                MetaValue::String { value, formatter } => {
                   let formatter = formatter.unwrap_or(&identity_formatter);
                   let (value, colored_value) = formatter(value, colored)?;
-                  format!(
+                  Ok(format!(
+                    "{prefix_}{}\n",
+                    if colored && !colored_value {
+                      coloring(value, &color)
+                    } else {
+                      value
+                    }
+                  ))
+                }
+                MetaValue::Variant { value, formatter } => {
+                  let formatter = formatter.unwrap_or(&identity_formatter);
+                  let (value, colored_value) = formatter(value, colored)?;
+                  Ok(format!(
+                    "{prefix_}{}\n",
+                    if colored && !colored_value {
+                      coloring(value, &color)
+                    } else {
+                      value
+                    }
+                  ))
+                }
+                MetaValue::Pretty(value) => Ok(format!(
+                  "{prefix_}{}",
+                  value.pretty(colored, Some(prefix.clone()))?
+                )),
+                MetaValue::OptionString {
+                  value,
+                  formatter,
+                  skip_none,
+                } => Ok(if value.is_none() && skip_none {
+                  String::new()
+                } else {
+                  match value {
+                    Some(value) => {
+                      let formatter = formatter.unwrap_or(&identity_formatter);
+                      let (value, colored_value) = formatter(value, colored)?;
+                      format!(
+                        "{prefix_}{}\n",
+                        if colored && !colored_value {
+                          coloring(value, &color)
+                        } else {
+                          value
+                        }
+                      )
+                    }
+                    None => {
+                      format!(
+                        "{prefix_}{}\n",
+                        if colored {
+                          "null".magenta().to_string() // TODO: coloring
+                        } else {
+                          "null".to_string()
+                        }
+                      )
+                    }
+                  }
+                }),
+                MetaValue::OptionPretty { value, skip_none } => Ok(match value {
+                  Some(value) => format!(
+                    "{prefix_}{}",
+                    value.pretty(colored, Some(prefix.clone() + "| "))?
+                  ),
+                  None => {
+                    if skip_none {
+                      String::new()
+                    } else {
+                      format!(
+                        "{prefix_}{}\n",
+                        if colored {
+                          "null".magenta().to_string() // TODO: coloring
+                        } else {
+                          "null".to_string()
+                        }
+                      )
+                    }
+                  }
+                }),
+                MetaValue::VecString(vec) => Ok(format!(
+                  "{prefix_}{}",
+                  vec.iter().fold(String::new(), |mut output, i| {
+                    let _ = writeln!(
+                      output,
+                      " - {}",
+                      if colored {
+                        coloring(i.to_string(), &color)
+                      } else {
+                        i.to_string()
+                      }
+                    );
+                    output
+                  })
+                )),
+                MetaValue::VecPretty(vec) => Ok(format!("{prefix_}{}", {
+                  vec
+                    .iter()
+                    .map(|value| {
+                      Ok(
+                        value
+                          .pretty(colored, Some(prefix.clone() + "   "))?
+                          .replacen("   ", " - ", 1),
+                      )
+                    })
+                    .collect::<Result<String>>()?
+                })),
+                MetaValue::OptionVecString { value, skip_none } => {
+                  Ok(if value.is_none() && skip_none {
+                    String::new()
+                  } else {
+                    format!(
+                      "{prefix_}{}",
+                      if colored {
+                        match value {
+                          Some(vec) => {
+                            "\n".to_string()
+                              + &vec.iter().fold(String::new(), |mut output, i| {
+                                let _ = writeln!(output, " - {}", coloring(i.to_string(), &color));
+                                output
+                              })
+                          }
+                          None => " null\n".magenta().to_string(), // TODO: coloring
+                        }
+                      } else {
+                        match value {
+                          Some(vec) => {
+                            "\n".to_string()
+                              + &vec.iter().fold(String::new(), |mut output, i| {
+                                let _ = writeln!(output, " - {}", i.to_string());
+                                output
+                              })
+                          }
+                          None => " null\n".to_string(),
+                        }
+                      }
+                    )
+                  })
+                }
+                MetaValue::OptionVecPretty { value, skip_none } => {
+                  Ok(if value.is_none() && skip_none {
+                    String::new()
+                  } else {
+                    format!(
+                      "{prefix_}{}",
+                      match value {
+                        Some(vec) =>
+                          "\n".to_string()
+                            + &vec
+                              .iter()
+                              .map(|i| Ok(
+                                i.pretty(colored, Some(prefix.clone() + "   "))?
+                                  .replacen("   ", " - ", 1)
+                              ))
+                              .collect::<Result<String>>()?,
+                        None =>
+                          if colored {
+                            " null\n".magenta().to_string() // TODO: coloring
+                          } else {
+                            " null\n".to_string()
+                          },
+                      }
+                    )
+                  })
+                }
+              }
+            }
+            FieldPrefix::Label { label, label_color } => {
+              let label = label_coloring(label, colored, &label_color);
+              match value {
+                MetaValue::String { value, formatter } => {
+                  let formatter = formatter.unwrap_or(&identity_formatter);
+                  let (value, colored_value) = formatter(value, colored)?;
+                  Ok(format!(
                     "{prefix_}{}{separator}{}\n",
                     label.pad_to_width(padding),
                     if colored && !colored_value {
@@ -297,126 +489,189 @@ pub trait PrettyPrint {
                     } else {
                       value
                     }
-                  )
+                  ))
                 }
-                None => {
-                  format!(
+                MetaValue::Variant { value, formatter } => {
+                  let formatter = formatter.unwrap_or(&identity_formatter);
+                  let (value, colored_value) = formatter(value, colored)?;
+                  Ok(format!(
                     "{prefix_}{}{separator}{}\n",
                     label.pad_to_width(padding),
-                    if colored {
-                      "null".magenta().to_string() // TODO: coloring
+                    if colored && !colored_value {
+                      coloring(value, &color)
                     } else {
-                      "null".to_string()
+                      value
                     }
-                  )
+                  ))
                 }
-              }
-            }),
-            MetaValue::OptionPretty { value, skip_none } => Ok(match value {
-              Some(value) => format!(
-                "{prefix_}{label} -->\n{}",
-                value.pretty(colored, Some(prefix.clone() + "| "))?
-              ),
-              None => {
-                if skip_none {
+                MetaValue::Pretty(value) => match value.meta().fields.first().unwrap().field_prefix {
+                  FieldPrefix::None => Ok(format!(
+                    "{prefix_}{}{separator}{}",
+                    label.pad_to_width(padding),
+                    value.pretty(colored, Some(prefix.clone()))?
+                  )),
+                  FieldPrefix::Multiline => Ok(format!(
+                    "{prefix_}{label} -->\n{}",
+                    value
+                      .pretty(colored, Some(prefix.clone() + "| "))?
+                      .replacen("| ", "", 1)
+                  )),
+                  _ => Ok(format!(
+                    "{prefix_}{label} -->\n{}",
+                    value.pretty(colored, Some(prefix.clone() + "| "))?
+                  )),
+                },
+                MetaValue::OptionString {
+                  value,
+                  formatter,
+                  skip_none,
+                } => Ok(if value.is_none() && skip_none {
                   String::new()
                 } else {
-                  format!(
-                    "{prefix_}{}{separator}{}\n",
-                    label.pad_to_width(padding),
-                    if colored {
-                      "null".magenta().to_string() // TODO: coloring
-                    } else {
-                      "null".to_string()
+                  match value {
+                    Some(value) => {
+                      let formatter = formatter.unwrap_or(&identity_formatter);
+                      let (value, colored_value) = formatter(value, colored)?;
+                      format!(
+                        "{prefix_}{}{separator}{}\n",
+                        label.pad_to_width(padding),
+                        if colored && !colored_value {
+                          coloring(value, &color)
+                        } else {
+                          value
+                        }
+                      )
                     }
-                  )
+                    None => {
+                      format!(
+                        "{prefix_}{}{separator}{}\n",
+                        label.pad_to_width(padding),
+                        if colored {
+                          "null".magenta().to_string() // TODO: coloring
+                        } else {
+                          "null".to_string()
+                        }
+                      )
+                    }
+                  }
+                }),
+                MetaValue::OptionPretty { value, skip_none } => Ok(match value {
+                  Some(value) => {
+                    if value.meta().fields.first().unwrap().field_prefix == FieldPrefix::None {
+                      format!(
+                        "{prefix_}{}{separator}{}",
+                        label.pad_to_width(padding),
+                        value.pretty(colored, Some(prefix.clone()))?
+                      )
+                    } else {
+                      format!(
+                        "{prefix_}{label} -->\n{}",
+                        value.pretty(colored, Some(prefix.clone() + "| "))?
+                      )
+                    }
+                  }
+                  None => {
+                    if skip_none {
+                      String::new()
+                    } else {
+                      format!(
+                        "{prefix_}{}{separator}{}\n",
+                        label.pad_to_width(padding),
+                        if colored {
+                          "null".magenta().to_string() // TODO: coloring
+                        } else {
+                          "null".to_string()
+                        }
+                      )
+                    }
+                  }
+                }),
+                MetaValue::VecString(vec) => Ok(format!(
+                  "{prefix_}{label} :\n{}",
+                  vec.iter().fold(String::new(), |mut output, i| {
+                    let _ = writeln!(
+                      output,
+                      " - {}",
+                      if colored {
+                        coloring(i.to_string(), &color)
+                      } else {
+                        i.to_string()
+                      }
+                    );
+                    output
+                  })
+                )),
+                MetaValue::VecPretty(vec) => Ok(format!("{prefix_}{label} :\n{}", {
+                  vec
+                    .iter()
+                    .map(|value| {
+                      Ok(
+                        value
+                          .pretty(colored, Some(prefix.clone() + "   "))?
+                          .replacen("   ", " - ", 1),
+                      )
+                    })
+                    .collect::<Result<String>>()?
+                })),
+                MetaValue::OptionVecString { value, skip_none } => {
+                  Ok(if value.is_none() && skip_none {
+                    String::new()
+                  } else {
+                    format!(
+                      "{prefix_}{label} :{}",
+                      if colored {
+                        match value {
+                          Some(vec) => {
+                            "\n".to_string()
+                              + &vec.iter().fold(String::new(), |mut output, i| {
+                                let _ = writeln!(output, " - {}", coloring(i.to_string(), &color));
+                                output
+                              })
+                          }
+                          None => " null\n".magenta().to_string(), // TODO: coloring
+                        }
+                      } else {
+                        match value {
+                          Some(vec) => {
+                            "\n".to_string()
+                              + &vec.iter().fold(String::new(), |mut output, i| {
+                                let _ = writeln!(output, " - {}", i.to_string());
+                                output
+                              })
+                          }
+                          None => " null\n".to_string(),
+                        }
+                      }
+                    )
+                  })
+                }
+                MetaValue::OptionVecPretty { value, skip_none } => {
+                  Ok(if value.is_none() && skip_none {
+                    String::new()
+                  } else {
+                    format!(
+                      "{prefix_}{label} :{}",
+                      match value {
+                        Some(vec) =>
+                          "\n".to_string()
+                            + &vec
+                              .iter()
+                              .map(|i| Ok(
+                                i.pretty(colored, Some(prefix.clone() + "   "))?
+                                  .replacen("   ", " - ", 1)
+                              ))
+                              .collect::<Result<String>>()?,
+                        None =>
+                          if colored {
+                            " null\n".magenta().to_string() // TODO: coloring
+                          } else {
+                            " null\n".to_string()
+                          },
+                      }
+                    )
+                  })
                 }
               }
-            }),
-            MetaValue::VecString(vec) => Ok(format!(
-              "{prefix_}{label} :\n{}",
-              vec.iter().fold(String::new(), |mut output, i| {
-                let _ = writeln!(
-                  output,
-                  " - {}",
-                  if colored {
-                    coloring(i.to_string(), &color)
-                  } else {
-                    i.to_string()
-                  }
-                );
-                output
-              })
-            )),
-            MetaValue::VecPretty(vec) => Ok(format!("{prefix_}{label} :\n{}", {
-              vec
-                .iter()
-                .map(|value| {
-                  Ok(
-                    value
-                      .pretty(colored, Some(prefix.clone() + "   "))?
-                      .replacen("   ", " - ", 1),
-                  )
-                })
-                .collect::<Result<String>>()?
-            })),
-            MetaValue::OptionVecString { value, skip_none } => {
-              Ok(if value.is_none() && skip_none {
-                String::new()
-              } else {
-                format!(
-                  "{prefix_}{label} :{}",
-                  if colored {
-                    match value {
-                      Some(vec) => {
-                        "\n".to_string()
-                          + &vec.iter().fold(String::new(), |mut output, i| {
-                            let _ = writeln!(output, " - {}", coloring(i.to_string(), &color));
-                            output
-                          })
-                      }
-                      None => " null\n".magenta().to_string(), // TODO: coloring
-                    }
-                  } else {
-                    match value {
-                      Some(vec) => {
-                        "\n".to_string()
-                          + &vec.iter().fold(String::new(), |mut output, i| {
-                            let _ = writeln!(output, " - {}", i.to_string());
-                            output
-                          })
-                      }
-                      None => " null\n".to_string(),
-                    }
-                  }
-                )
-              })
-            }
-            MetaValue::OptionVecPretty { value, skip_none } => {
-              Ok(if value.is_none() && skip_none {
-                String::new()
-              } else {
-                format!(
-                  "{prefix_}{label} :{}",
-                  match value {
-                    Some(vec) =>
-                      "\n".to_string()
-                        + &vec
-                          .iter()
-                          .map(|i| Ok(
-                            i.pretty(colored, Some(prefix.clone() + "   "))?
-                              .replacen("   ", " - ", 1)
-                          ))
-                          .collect::<Result<String>>()?,
-                    None =>
-                      if colored {
-                        " null\n".magenta().to_string() // TODO: coloring
-                      } else {
-                        " null\n".to_string()
-                      },
-                  }
-                )
-              })
             }
           }
         },
@@ -427,7 +682,7 @@ pub trait PrettyPrint {
 
 #[cfg(test)]
 mod tests {
-  use crate::{coloring, Color, Meta, MetaField, MetaValue, PrettyPrint};
+  use crate::{coloring, Color, FieldPrefix, Meta, MetaField, MetaValue, PrettyPrint};
 
   #[test]
   fn empty_struct() {
@@ -461,27 +716,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -518,27 +779,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -559,18 +826,22 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "n",
+              field_prefix: FieldPrefix::Label {
+                label: "n",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::Pretty(&self.n),
             },
           ],
@@ -606,27 +877,33 @@ mod tests {
           separator: Some("-> "),
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -663,27 +940,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -720,27 +1003,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: Some(Color::Green),
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: Some(Color::Yellow),
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: Some(Color::Magenta),
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -777,8 +1066,10 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
-              label_color: Some(Color::Green),
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: Some(Color::Green),
+              },
               color: None,
               value: MetaValue::String {
                 value: &self.a,
@@ -786,8 +1077,10 @@ mod tests {
               },
             },
             MetaField {
-              label: "bb",
-              label_color: Some(Color::Yellow),
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: Some(Color::Yellow),
+              },
               color: None,
               value: MetaValue::String {
                 value: &self.bb,
@@ -795,8 +1088,10 @@ mod tests {
               },
             },
             MetaField {
-              label: "cccc",
-              label_color: Some(Color::Magenta),
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: Some(Color::Magenta),
+              },
               color: None,
               value: MetaValue::String {
                 value: &self.cccc,
@@ -834,9 +1129,11 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionString {
                 value: self.a.as_ref().map(|x| x as &dyn ToString),
                 formatter: None,
@@ -844,9 +1141,11 @@ mod tests {
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionString {
                 value: self.bb.as_ref().map(|x| x as &dyn ToString),
                 formatter: None,
@@ -883,18 +1182,22 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: Some(&|x, _| Ok((format!("{} format", x.to_string()), false))),
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionString {
                 value: self.bb.as_ref().map(|x| x as &dyn ToString),
                 formatter: Some(&|x, _| Ok((format!("{} format", x.to_string()), false))),
@@ -931,9 +1234,11 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionString {
                 value: self.a.as_ref().map(|x| x as &dyn ToString),
                 formatter: None,
@@ -941,9 +1246,11 @@ mod tests {
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionString {
                 value: self.bb.as_ref().map(|x| x as &dyn ToString),
                 formatter: None,
@@ -974,9 +1281,11 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionString {
                 value: self.a.as_ref().map(|x| x as &dyn ToString),
                 formatter: None,
@@ -984,9 +1293,11 @@ mod tests {
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionString {
                 value: self.bb.as_ref().map(|x| x as &dyn ToString),
                 formatter: None,
@@ -1023,27 +1334,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -1064,18 +1381,22 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "n",
+              field_prefix: FieldPrefix::Label {
+                label: "n",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionPretty {
                 value: self.n.as_ref().map(|x| x as &dyn PrettyPrint),
                 skip_none: false,
@@ -1121,27 +1442,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -1162,18 +1489,22 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "n",
+              field_prefix: FieldPrefix::Label {
+                label: "n",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionPretty {
                 value: self.n.as_ref().map(|x| x as &dyn PrettyPrint),
                 skip_none: true,
@@ -1216,15 +1547,19 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::VecString(self.a.iter().map(|x| x as &dyn ToString).collect()),
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::VecString(self.bb.iter().map(|x| x as &dyn ToString).collect()),
             },
           ],
@@ -1257,15 +1592,19 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::VecString(self.a.iter().map(|x| x as &dyn ToString).collect()),
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::VecString(self.bb.iter().map(|x| x as &dyn ToString).collect()),
             },
           ],
@@ -1298,27 +1637,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -1339,18 +1684,22 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "n",
+              field_prefix: FieldPrefix::Label {
+                label: "n",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::VecPretty(self.n.iter().map(|x| x as &dyn PrettyPrint).collect()),
             },
           ],
@@ -1386,9 +1735,11 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecString {
                 value: self
                   .a
@@ -1398,9 +1749,11 @@ mod tests {
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecString {
                 value: self
                   .bb
@@ -1446,9 +1799,11 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecString {
                 value: self
                   .a
@@ -1458,9 +1813,11 @@ mod tests {
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecString {
                 value: self
                   .bb
@@ -1503,9 +1860,11 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecString {
                 value: self
                   .a
@@ -1515,9 +1874,11 @@ mod tests {
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecString {
                 value: self
                   .bb
@@ -1563,27 +1924,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -1604,18 +1971,22 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "n",
+              field_prefix: FieldPrefix::Label {
+                label: "n",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecPretty {
                 value: self
                   .n
@@ -1671,27 +2042,33 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "bb",
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.bb,
                 formatter: None,
               },
             },
             MetaField {
-              label: "cccc",
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.cccc,
                 formatter: None,
@@ -1712,18 +2089,22 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
-              label: "a",
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::String {
                 value: &self.a,
                 formatter: None,
               },
             },
             MetaField {
-              label: "n",
+              field_prefix: FieldPrefix::Label {
+                label: "n",
+                label_color: None,
+              },
               color: None,
-              label_color: None,
               value: MetaValue::OptionVecPretty {
                 value: self
                   .n
@@ -1776,5 +2157,132 @@ mod tests {
       coloring("string".to_string(), &Some(Color::Red)),
       "\u{1b}[1m\u{1b}[31mstring\u{1b}[39m\u{1b}[0m".to_string()
     );
+  }
+
+  #[test]
+  fn simple_enum() {
+    enum E1 {
+      Aa,
+      Bb,
+    }
+
+    impl PrettyPrint for E1 {
+      fn meta(&self) -> Meta {
+        Meta {
+          padding: 5,
+          separator: None,
+          fields: vec![MetaField {
+            field_prefix: FieldPrefix::None,
+            color: None,
+            value: MetaValue::Variant {
+              value: match self {
+                E1::Aa => &"Aa",
+                E1::Bb => &"Bb",
+              },
+              formatter: None,
+            },
+          }],
+        }
+      }
+    }
+
+    let s = E1::Aa;
+    assert_eq!(s.pretty(false, None).unwrap(), "Aa\n".to_string());
+    let s = E1::Bb;
+    assert_eq!(s.pretty(false, None).unwrap(), "Bb\n".to_string());
+  }
+
+  #[test]
+  fn enum_with_struct() {
+    #[derive(Debug)]
+    struct T1 {
+      a: u32,
+      bb: String,
+      cccc: bool,
+    }
+
+    impl PrettyPrint for T1 {
+      fn meta(&self) -> Meta {
+        Meta {
+          padding: 5,
+          separator: None,
+          fields: vec![
+            MetaField {
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
+              color: None,
+              value: MetaValue::String {
+                value: &self.a,
+                formatter: None,
+              },
+            },
+            MetaField {
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
+              color: None,
+              value: MetaValue::String {
+                value: &self.bb,
+                formatter: None,
+              },
+            },
+            MetaField {
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
+              color: None,
+              value: MetaValue::String {
+                value: &self.cccc,
+                formatter: None,
+              },
+            },
+          ],
+        }
+      }
+    }
+
+    enum E1 {
+      Aa(T1),
+      Bb,
+    }
+
+    impl PrettyPrint for E1 {
+      fn meta(&self) -> Meta {
+        Meta {
+          padding: 5,
+          separator: None,
+          fields: vec![MetaField {
+            field_prefix: FieldPrefix::Label {
+              label: "a",
+              label_color: None,
+            },
+            color: None,
+            value: match self {
+              E1::Aa(t) => MetaValue::Pretty(t),
+              E1::Bb => MetaValue::Variant {
+                value: &"Bb",
+                formatter: None,
+              },
+            },
+          }],
+        }
+      }
+    }
+
+    let s = E1::Aa(T1 {
+      a: 14,
+      bb: "aaa".to_string(),
+      cccc: true,
+    });
+    assert_eq!(
+      s.pretty(false, None).unwrap(),
+      "a -->\n| a    = 14\n| bb   = aaa\n| cccc = true\n".to_string()
+    );
+    let s = E1::Bb;
+    assert_eq!(s.pretty(false, None).unwrap(), "a    = Bb\n".to_string());
   }
 }

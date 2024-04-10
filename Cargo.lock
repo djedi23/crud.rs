@@ -619,7 +619,9 @@ dependencies = [
 name = "crud-pretty-struct-derive"
 version = "0.1.6"
 dependencies = [
+ "crud-pretty-struct",
  "darling 0.20.3",
+ "miette",
  "owo-colors 4.0.0",
  "proc-macro-error",
  "proc-macro2",
