@@ -20,7 +20,7 @@ struct Foo {
     d: OtherPrettyStruct
 }
 // Instanciate a `var` of type  `Foo`
-println!("{}",var.pretty(true,None).expect("Can prettify var"));
+println!("{}",var.pretty(true,None,None).expect("Can prettify var"));
 ```
 
 ### Field Options

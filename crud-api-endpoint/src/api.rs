@@ -136,7 +136,7 @@ pub fn table_impl<T: Into<ApiField> + Clone>(
 	  where Self:crud_pretty_struct::PrettyPrint
 	{
 	    use is_terminal::IsTerminal;
-	    self.pretty(std::io::stdout().is_terminal(), None)
+	    self.pretty(std::io::stdout().is_terminal(), None, None)
 	  }
       }
   } else {

@@ -1,3 +1,5 @@
+mod types;
+
 use darling::{ast::Data, FromDeriveInput, FromField, FromMeta, FromVariant};
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
@@ -5,6 +7,7 @@ use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::quote;
 use strum::Display;
 use syn::{parse, DeriveInput, Expr, GenericArgument, PathArguments, Type};
+use types::VecStringWrapper;
 use unicode_width::UnicodeWidthStr;
 
 #[derive(Debug, FromDeriveInput)]
@@ -73,6 +76,10 @@ struct PrettyField {
   /// ```
   ///
   formatter: Option<Expr>,
+
+  /// Print this field only when one of this profile is active or profiles is none.
+  /// Profiles is a coma separated string.
+  profiles: Option<VecStringWrapper>,
 }
 
 #[derive(Debug, Clone, FromVariant)]
@@ -141,6 +148,20 @@ fn derive_struct(pretty: PrettyStruct) -> TokenStream {
       .collect(),
   };
 
+  let profiles: Vec<Vec<String>> = match &pretty.data {
+    Data::Enum(_) => unreachable!(),
+    Data::Struct(strct) => strct
+      .fields
+      .iter()
+      .filter(|&f| !f.skip)
+      .map(|field| field.profiles.to_owned().unwrap_or(vec![].into()).into())
+      .collect(),
+  };
+  let profiles: Vec<proc_macro2::TokenStream> = profiles
+    .iter()
+    .map(|profile| quote!(#(#profile),*))
+    .collect();
+
   let colors: Vec<proc_macro2::TokenStream> = match &pretty.data {
     Data::Enum(_) => unreachable!(),
     Data::Struct(strct) => strct
@@ -185,22 +206,22 @@ fn derive_struct(pretty: PrettyStruct) -> TokenStream {
           if is_option_vec(&field.ty) {
             let skip_none = field.skip_none;
             quote!(crud_pretty_struct::MetaValue::OptionVecPretty{value:self.#id.as_ref().map(
-		      |vec| vec.iter().map(|x| x as &dyn PrettyPrint).collect()),skip_none:#skip_none})
+			    |vec| vec.iter().map(|x| x as &dyn PrettyPrint).collect()),skip_none:#skip_none})
           } else if is_option(&field.ty) {
             let skip_none = field.skip_none;
             quote!(crud_pretty_struct::MetaValue::OptionPretty{value:self.#id.as_ref().map(
-		      |x| x as &dyn PrettyPrint),skip_none:#skip_none})
+			    |x| x as &dyn PrettyPrint),skip_none:#skip_none})
           } else if is_vec(&field.ty) {
             quote!(crud_pretty_struct::MetaValue::VecPretty(self.#id.iter().map(
-		      |x| x as &dyn PrettyPrint).collect()))
+			    |x| x as &dyn PrettyPrint).collect()))
           } else {
             quote!(crud_pretty_struct::MetaValue::Pretty(&self.#id))
           }
         } else if is_option_vec(&field.ty) {
           let skip_none = field.skip_none;
           quote!(crud_pretty_struct::MetaValue::OptionVecString{value:self.#id.as_ref().map(
-		  |vec| vec.iter().map(|x| x as &dyn ToString).collect()),
-	      skip_none:#skip_none})
+			|vec| vec.iter().map(|x| x as &dyn ToString).collect()),
+									skip_none:#skip_none})
         } else if is_option(&field.ty) {
           let formatter = match field.formatter {
             None => quote!(None),
@@ -211,10 +232,10 @@ fn derive_struct(pretty: PrettyStruct) -> TokenStream {
           };
           let skip_none = field.skip_none;
           quote!(crud_pretty_struct::MetaValue::OptionString{value:self.#id.as_ref().map(
-		  |x| x as &dyn ToString), formatter:#formatter, skip_none:#skip_none})
+			|x| x as &dyn ToString), formatter:#formatter, skip_none:#skip_none})
         } else if is_vec(&field.ty) {
           quote!(crud_pretty_struct::MetaValue::VecString(self.#id.iter().map(
-		  |x| x as &dyn ToString).collect()))
+			|x| x as &dyn ToString).collect()))
         } else {
           let formatter = match field.formatter {
             None => quote!(None),
@@ -244,6 +265,7 @@ fn derive_struct(pretty: PrettyStruct) -> TokenStream {
     fields: vec![
         #(
       crud_pretty_struct::MetaField {
+          profiles: vec![#profiles],
           field_prefix: crud_pretty_struct::FieldPrefix::Label {
         label: #field_names,
         label_color: #label_colors,
@@ -296,9 +318,9 @@ fn derive_enum(pretty: PrettyStruct) -> TokenStream {
         .collect();
 
       quote!(match self {
-            #(#enum_ident::#variant_ident #variant_param => #variant_color),*
+      #(#enum_ident::#variant_ident #variant_param => #variant_color),*
               }
-      )
+        )
     }],
     Data::Struct(_) => unreachable!(),
   };
@@ -339,9 +361,9 @@ fn derive_enum(pretty: PrettyStruct) -> TokenStream {
         .collect();
 
       quote!(match self {
-            #(#enum_ident::#variant_ident #variant_param => #variant_prefix),*
+      #(#enum_ident::#variant_ident #variant_param => #variant_prefix),*
               }
-      )
+        )
     }],
     Data::Struct(_) => unreachable!(),
   };
@@ -385,28 +407,29 @@ fn derive_enum(pretty: PrettyStruct) -> TokenStream {
         .collect();
       quote!(match self {
       #(#enum_ident::#variant_ident #variant_param => #variant_value),*
-        })
+              })
     }],
     Data::Struct(_) => unreachable!(),
   };
 
   quote!(impl crud_pretty_struct::PrettyPrint for #pretty_ident {
-      fn meta(&self) ->crud_pretty_struct::Meta {
-    crud_pretty_struct::Meta {
-              padding: 0,
-              separator: None,
-              fields: vec![
-      #(
-          crud_pretty_struct:: MetaField {
-        field_prefix: #field_prefix,
-        color: #colors,
-        value: #values_expr,
-          }
-      ),*
-              ]
-    }
+  fn meta(&self) ->crud_pretty_struct::Meta {
+      crud_pretty_struct::Meta {
+    padding: 0,
+    separator: None,
+    fields: vec![
+        #(
+      crud_pretty_struct:: MetaField {
+          profiles: Vec::new(), // No profiles in enums
+          field_prefix: #field_prefix,
+          color: #colors,
+          value: #values_expr,
       }
-  })
+        ),*
+    ]
+      }
+  }
+    })
   .into()
 }
 

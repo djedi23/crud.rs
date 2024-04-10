@@ -14,7 +14,7 @@ impl PrettyPrint for Value {
       fields: vec![],
     }
   }
-  fn pretty(&self, colored: bool, prefix: Option<String>) -> Result<String> {
+  fn pretty(&self, colored: bool, prefix: Option<String>, _profile: Option<&str>) -> Result<String> {
     let Meta { separator, .. } = self.meta();
 
     let separator = separator.unwrap_or("= ");
@@ -45,7 +45,7 @@ impl PrettyPrint for Value {
             output,
             "{prefix_}{}{end}",
             item
-              .pretty(colored, Some(prefix.clone() + "   "))
+              .pretty(colored, Some(prefix.clone() + "   "), _profile)
               .unwrap_or_default()
               .replacen(&(prefix.clone() + "   "), " - ", 1)
           );
@@ -76,6 +76,7 @@ impl PrettyPrint for Value {
                     Value::Array(_) | Value::Object(_) => Some(prefix.clone() + "| "),
                     _ => None,
                   },
+                  _profile,
                 )
                 .unwrap_or_default();
               if colored {
@@ -113,33 +114,33 @@ mod tests {
   #[test]
   fn value_object() {
     let v: Value = json!({});
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "".to_string());
 
     let v: Value = json!({"a":1});
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "a = 1\n".to_string());
 
     let v: Value = json!({"number":1,"bool":true,"string":"string"});
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(
       result,
       "bool   = true\nnumber = 1\nstring = string\n".to_string()
     );
     let v: Value = json!({"array":[1, 3, 4]});
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "array -->\n|  - 1\n|  - 3\n|  - 4\n".to_string());
 
     let v: Value = json!({"object":{"aaa":1,"b":2}});
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "object -->\n| aaa = 1\n| b   = 2\n".to_string());
 
     let v: Value = json!({"object":{"aaa":1,"b":{"a":"aaaa","bbb":["a","bb","ccc"]}}});
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "object -->\n| aaa = 1\n| b   -->\n| | a   = aaaa\n| | bbb -->\n| | |  - a\n| | |  - bb\n| | |  - ccc\n".to_string());
 
     let v: Value = json!({"array":[{"a":1,"bb":2},{"b":2}]});
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(
       result,
       "array -->\n|  - a  = 1\n|    bb = 2\n|  - b = 2\n".to_string()
@@ -149,11 +150,11 @@ mod tests {
   #[test]
   fn value_object_colored() {
     let v: Value = json!({});
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(result, "".to_string());
 
     let v: Value = json!({"a":1});
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(
       result,
       "a = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n"
@@ -161,64 +162,64 @@ mod tests {
     );
 
     let v: Value = json!({"number":1,"bool":true,"string":"string"});
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(
       result,
      "bool   = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97mtrue\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\nnumber = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\nstring = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n".to_string()
     );
     let v: Value = json!({"array":[1, 3, 4]});
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(result,  "array -->\n\u{1b}[1m\u{1b}[97m\u{1b}[38;2;80;80;80m| \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m4\u{1b}[39m\u{1b}[0m\n\u{1b}[39m\u{1b}[0m".to_string());
 
     let v: Value = json!({"object":{"aaa":1,"b":2}});
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(result, "object -->\n\u{1b}[1m\u{1b}[97m\u{1b}[38;2;80;80;80m| \u{1b}[39maaa = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| \u{1b}[39mb   = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97m2\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n\u{1b}[39m\u{1b}[0m".to_string());
 
     let v: Value = json!({"object":{"aaa":1,"b":{"a":"aaaa","bbb":["a",{"bb":3,"a":6,"ccc":[1,2,3]},["ccc","ddddd"]]}}});
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(result, "object -->\n\u{1b}[1m\u{1b}[97m\u{1b}[38;2;80;80;80m| \u{1b}[39maaa = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| \u{1b}[39mb   -->\n\u{1b}[1m\u{1b}[97m\u{1b}[38;2;80;80;80m| | \u{1b}[39ma   = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97maaaa\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| | \u{1b}[39mbbb -->\n\u{1b}[1m\u{1b}[97m\u{1b}[38;2;80;80;80m| | | \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97ma\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| | | \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39ma   = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97m6\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| | |    \u{1b}[39mbb  = \u{1b}[1m\u{1b}[97m\u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| | |    \u{1b}[39mccc -->\n\u{1b}[1m\u{1b}[97m\u{1b}[38;2;80;80;80m| | |    | \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| | |    | \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m2\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| | |    | \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n\u{1b}[39m\u{1b}[0m\u{1b}[38;2;80;80;80m| | | \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97mccc\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m| | |    \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97mddddd\u{1b}[39m\u{1b}[0m\n\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m\u{1b}[39m\u{1b}[0m".to_string());
   }
 
   #[test]
   fn value_null() {
     let v: Value = json!(null);
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "null".to_string());
   }
 
   #[test]
   fn value_bool() {
     let v: Value = json!(false);
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "false".to_string());
 
     let v: Value = json!(true);
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "true".to_string());
   }
 
   #[test]
   fn value_string() {
     let v: Value = json!("string");
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "string".to_string());
   }
 
   #[test]
   fn value_number() {
     let v: Value = json!(5);
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "5".to_string());
 
     let v: Value = json!(-3.014);
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, "-3.014".to_string());
   }
 
   #[test]
   fn value_number_colored() {
     let v: Value = json!(-874);
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(
       result,
       "\u{1b}[1m\u{1b}[97m-874\u{1b}[39m\u{1b}[0m".to_string()
@@ -229,7 +230,7 @@ mod tests {
   fn value_number_porefix() {
     let v: Value = json!(842.147854);
     let result = v
-      .pretty(false, Some("==> ".to_string()))
+      .pretty(false, Some("==> ".to_string()), None)
       .unwrap_or_default();
     assert_eq!(result, "==> 842.147854".to_string());
   }
@@ -237,14 +238,14 @@ mod tests {
   #[test]
   fn value_array() {
     let v: Value = json!([1, 2, 3]);
-    let result = v.pretty(false, None).unwrap_or_default();
+    let result = v.pretty(false, None, None).unwrap_or_default();
     assert_eq!(result, " - 1\n - 2\n - 3\n".to_string());
   }
 
   #[test]
   fn value_array_color() {
     let v: Value = json!([1, 2, 3]);
-    let result = v.pretty(true, None).unwrap_or_default();
+    let result = v.pretty(true, None, None).unwrap_or_default();
     assert_eq!(result,"\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m2\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n".to_string());
   }
 
@@ -252,7 +253,7 @@ mod tests {
   fn value_array_prefix() {
     let v: Value = json!([1, 2, 3]);
     let result = v
-      .pretty(false, Some(">>> ".to_string()))
+      .pretty(false, Some(">>> ".to_string()), None)
       .unwrap_or_default();
     assert_eq!(result, ">>>  - 1\n>>>  - 2\n>>>  - 3\n".to_string());
   }
@@ -260,7 +261,9 @@ mod tests {
   #[test]
   fn value_array_prefix_colored() {
     let v: Value = json!([1, 2, 3]);
-    let result = v.pretty(true, Some(">>> ".to_string())).unwrap_or_default();
+    let result = v
+      .pretty(true, Some(">>> ".to_string()), None)
+      .unwrap_or_default();
     assert_eq!(result, "\u{1b}[38;2;80;80;80m>>> \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m>>> \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m2\u{1b}[39m\u{1b}[0m\n\u{1b}[38;2;80;80;80m>>> \u{1b}[39m\u{1b}[38;2;80;80;80m - \u{1b}[39m\u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n".to_string());
   }
 }

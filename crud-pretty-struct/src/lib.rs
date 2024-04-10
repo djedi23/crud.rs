@@ -23,7 +23,7 @@
 //! }
 //! # let var = Foo{a:0,b:None,c:false,d:OtherPrettyStruct{val:0}};
 //! // Instanciate a `var` of type  `Foo`
-//! println!("{}",var.pretty(true,None).expect("Can prettify var"));
+//! println!("{}",var.pretty(true,None,None).expect("Can prettify var"));
 //! ```
 //!
 //! ## Field Options
@@ -230,6 +230,7 @@ pub enum FieldPrefix<'a> {
 }
 
 pub struct MetaField<'a> {
+  pub profiles: Vec<&'a str>,
   pub field_prefix: FieldPrefix<'a>,
   pub color: Option<Color>,
   pub value: MetaValue<'a>,
@@ -279,7 +280,7 @@ fn label_coloring(label: &str, colored: bool, color: &Option<Color>) -> String {
 
 pub trait PrettyPrint {
   fn meta(&self) -> Meta;
-  fn pretty(&self, colored: bool, prefix: Option<String>) -> Result<String> {
+  fn pretty(&self, colored: bool, prefix: Option<String>, profile: Option<&str>) -> Result<String> {
     let Meta {
       fields,
       separator,
@@ -299,11 +300,19 @@ pub trait PrettyPrint {
     let prefix = prefix.unwrap_or_default();
     fields
       .into_iter()
+      .filter(|MetaField { profiles, .. }| {
+        if let Some(profile) = &profile {
+          profiles.contains(profile)
+        } else {
+          true
+        }
+      })
       .map(
         |MetaField {
            field_prefix,
            color,
            value,
+           ..
          }| {
           match field_prefix {
             FieldPrefix::None | FieldPrefix::Multiline => {
@@ -334,7 +343,7 @@ pub trait PrettyPrint {
                 }
                 MetaValue::Pretty(value) => Ok(format!(
                   "{prefix_}{}",
-                  value.pretty(colored, Some(prefix.clone()))?
+                  value.pretty(colored, Some(prefix.clone()), profile)?
                 )),
                 MetaValue::OptionString {
                   value,
@@ -371,7 +380,7 @@ pub trait PrettyPrint {
                 MetaValue::OptionPretty { value, skip_none } => Ok(match value {
                   Some(value) => format!(
                     "{prefix_}{}",
-                    value.pretty(colored, Some(prefix.clone() + "| "))?
+                    value.pretty(colored, Some(prefix.clone() + "| "), profile)?
                   ),
                   None => {
                     if skip_none {
@@ -409,7 +418,7 @@ pub trait PrettyPrint {
                     .map(|value| {
                       Ok(
                         value
-                          .pretty(colored, Some(prefix.clone() + "   "))?
+                          .pretty(colored, Some(prefix.clone() + "   "), profile)?
                           .replacen("   ", " - ", 1),
                       )
                     })
@@ -459,7 +468,7 @@ pub trait PrettyPrint {
                             + &vec
                               .iter()
                               .map(|i| Ok(
-                                i.pretty(colored, Some(prefix.clone() + "   "))?
+                                i.pretty(colored, Some(prefix.clone() + "   "), profile)?
                                   .replacen("   ", " - ", 1)
                               ))
                               .collect::<Result<String>>()?,
@@ -508,17 +517,17 @@ pub trait PrettyPrint {
                   FieldPrefix::None => Ok(format!(
                     "{prefix_}{}{separator}{}",
                     label.pad_to_width(padding),
-                    value.pretty(colored, Some(prefix.clone()))?
+                    value.pretty(colored, Some(prefix.clone()), profile)?
                   )),
                   FieldPrefix::Multiline => Ok(format!(
                     "{prefix_}{label} -->\n{}",
                     value
-                      .pretty(colored, Some(prefix.clone() + "| "))?
+                      .pretty(colored, Some(prefix.clone() + "| "), profile)?
                       .replacen("| ", "", 1)
                   )),
                   _ => Ok(format!(
                     "{prefix_}{label} -->\n{}",
-                    value.pretty(colored, Some(prefix.clone() + "| "))?
+                    value.pretty(colored, Some(prefix.clone() + "| "), profile)?
                   )),
                 },
                 MetaValue::OptionString {
@@ -561,12 +570,12 @@ pub trait PrettyPrint {
                       format!(
                         "{prefix_}{}{separator}{}",
                         label.pad_to_width(padding),
-                        value.pretty(colored, Some(prefix.clone()))?
+                        value.pretty(colored, Some(prefix.clone()), profile)?
                       )
                     } else {
                       format!(
                         "{prefix_}{label} -->\n{}",
-                        value.pretty(colored, Some(prefix.clone() + "| "))?
+                        value.pretty(colored, Some(prefix.clone() + "| "), profile)?
                       )
                     }
                   }
@@ -607,7 +616,7 @@ pub trait PrettyPrint {
                     .map(|value| {
                       Ok(
                         value
-                          .pretty(colored, Some(prefix.clone() + "   "))?
+                          .pretty(colored, Some(prefix.clone() + "   "), profile)?
                           .replacen("   ", " - ", 1),
                       )
                     })
@@ -657,7 +666,7 @@ pub trait PrettyPrint {
                             + &vec
                               .iter()
                               .map(|i| Ok(
-                                i.pretty(colored, Some(prefix.clone() + "   "))?
+                                i.pretty(colored, Some(prefix.clone() + "   "), profile)?
                                   .replacen("   ", " - ", 1)
                               ))
                               .collect::<Result<String>>()?,
@@ -698,7 +707,7 @@ mod tests {
     }
 
     let s = T1 {};
-    assert_eq!(s.pretty(false, None).unwrap(), "".to_string());
+    assert_eq!(s.pretty(false, None, None).unwrap(), "".to_string());
   }
 
   #[test]
@@ -716,6 +725,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -727,6 +737,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -738,6 +749,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -758,11 +770,86 @@ mod tests {
       bb: "string".to_string(),
       cccc: false,
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None,&None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a    = 5\nbb   = string\ncccc = false\n".to_string()
     );
+  }
+
+  #[test]
+  fn struct_with_profile() {
+    struct T1 {
+      a: u32,
+      bb: String,
+      cccc: bool,
+    }
+
+    impl PrettyPrint for T1 {
+      fn meta(&self) -> Meta {
+        Meta {
+          padding: 5,
+          separator: None,
+          fields: vec![
+            MetaField {
+              profiles: vec!["a"],
+              field_prefix: FieldPrefix::Label {
+                label: "a",
+                label_color: None,
+              },
+              color: None,
+              value: MetaValue::String {
+                value: &self.a,
+                formatter: None,
+              },
+            },
+            MetaField {
+              profiles: vec!["b"],
+              field_prefix: FieldPrefix::Label {
+                label: "bb",
+                label_color: None,
+              },
+              color: None,
+              value: MetaValue::String {
+                value: &self.bb,
+                formatter: None,
+              },
+            },
+            MetaField {
+              profiles: vec!["a", "b"],
+              field_prefix: FieldPrefix::Label {
+                label: "cccc",
+                label_color: None,
+              },
+              color: None,
+              value: MetaValue::String {
+                value: &self.cccc,
+                formatter: None,
+              },
+            },
+          ],
+        }
+      }
+    }
+
+    let s = T1 {
+      a: 5,
+      bb: "string".to_string(),
+      cccc: false,
+    };
+    assert_eq!(
+      s.pretty(false, None, None).unwrap(),
+      "a    = 5\nbb   = string\ncccc = false\n".to_string()
+    );
+    assert_eq!(
+      s.pretty(false, None, Some("a")).unwrap(),
+      "a    = 5\ncccc = false\n".to_string()
+    );
+    assert_eq!(
+      s.pretty(false, None, Some("b")).unwrap(),
+      "bb   = string\ncccc = false\n".to_string()
+    );
+    assert_eq!(s.pretty(false, None, Some("c")).unwrap(), "".to_string());
   }
 
   #[test]
@@ -779,6 +866,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -790,6 +878,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -801,6 +890,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -826,6 +916,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -837,6 +928,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "n",
                 label_color: None,
@@ -856,9 +948,9 @@ mod tests {
         cccc: false,
       },
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None,&None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn -->\n| a    = 5\n| bb   = string\n| cccc = false\n".to_string()
     );
   }
@@ -877,6 +969,7 @@ mod tests {
           separator: Some("-> "),
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -888,6 +981,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -899,6 +993,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -919,9 +1014,9 @@ mod tests {
       bb: "string".to_string(),
       cccc: false,
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None,&None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a    -> 5\nbb   -> string\ncccc -> false\n".to_string()
     );
   }
@@ -940,6 +1035,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -951,6 +1047,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -962,6 +1059,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -984,7 +1082,7 @@ mod tests {
     };
     //    print!("{}", s.pretty(true, None));
     assert_eq!(
-    s.pretty(true,None).unwrap(),
+    s.pretty(true,None, None).unwrap(),
     "a    = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\nbb   = \u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\ncccc = \u{1b}[1m\u{1b}[97mfalse\u{1b}[39m\u{1b}[0m\n".to_string()
   );
   }
@@ -1003,6 +1101,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1014,6 +1113,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1025,6 +1125,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -1047,7 +1148,7 @@ mod tests {
     };
     //    print!("{}", s.pretty(true, None));
     assert_eq!(
-    s.pretty(true,None).unwrap(),
+    s.pretty(true,None, None).unwrap(),
   "a    = \u{1b}[1m\u{1b}[32m5\u{1b}[39m\u{1b}[0m\nbb   = \u{1b}[1m\u{1b}[33mstring\u{1b}[39m\u{1b}[0m\ncccc = \u{1b}[1m\u{1b}[35mfalse\u{1b}[39m\u{1b}[0m\n".to_string()
   );
   }
@@ -1066,6 +1167,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: Some(Color::Green),
@@ -1077,6 +1179,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: Some(Color::Yellow),
@@ -1088,6 +1191,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: Some(Color::Magenta),
@@ -1110,7 +1214,7 @@ mod tests {
     };
     //    print!("{}", s.pretty(true, None));
     assert_eq!(
-    s.pretty(true,None).unwrap(),
+    s.pretty(true,None, None).unwrap(),
  "\u{1b}[32ma\u{1b}[39m= \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n\u{1b}[33mbb\u{1b}[39m= \u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\n\u{1b}[35mcccc\u{1b}[39m= \u{1b}[1m\u{1b}[97mfalse\u{1b}[39m\u{1b}[0m\n".to_string()
   );
   }
@@ -1129,6 +1233,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1141,6 +1246,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1161,9 +1267,9 @@ mod tests {
       a: Some(5),
       bb: None,
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a    = 5\nbb   = null\n".to_string()
     );
   }
@@ -1182,6 +1288,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1193,6 +1300,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1213,9 +1321,9 @@ mod tests {
       a: 5,
       bb: Some("option".to_string()),
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a    = 5 format\nbb   = option format\n".to_string()
     );
   }
@@ -1234,6 +1342,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1246,6 +1355,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1263,8 +1373,11 @@ mod tests {
     }
 
     let s = T1 { a: None, bb: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
-    assert_eq!(s.pretty(false, None).unwrap(), "bb   = null\n".to_string());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
+    assert_eq!(
+      s.pretty(false, None, None).unwrap(),
+      "bb   = null\n".to_string()
+    );
   }
 
   #[test]
@@ -1281,6 +1394,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1293,6 +1407,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1315,7 +1430,7 @@ mod tests {
     };
     //    print!("{}", s.pretty(true, None));
     assert_eq!(
-      s.pretty(true, None).unwrap(),
+      s.pretty(true, None, None).unwrap(),
       "a    = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\nbb   = \u{1b}[35mnull\u{1b}[39m\n".to_string()
     );
   }
@@ -1334,6 +1449,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1345,6 +1461,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1356,6 +1473,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -1381,6 +1499,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1392,6 +1511,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "n",
                 label_color: None,
@@ -1414,16 +1534,16 @@ mod tests {
         cccc: false,
       }),
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn -->\n| a    = 5\n| bb   = string\n| cccc = false\n".to_string()
     );
 
     let s = T2 { a: 5, n: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn = null\n".to_string()
     );
   }
@@ -1442,6 +1562,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1453,6 +1574,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1464,6 +1586,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -1489,6 +1612,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1500,6 +1624,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "n",
                 label_color: None,
@@ -1522,15 +1647,15 @@ mod tests {
         cccc: false,
       }),
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn -->\n| a    = 5\n| bb   = string\n| cccc = false\n".to_string()
     );
 
     let s = T2 { a: 5, n: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
-    assert_eq!(s.pretty(false, None).unwrap(), "a = 5\n".to_string());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
+    assert_eq!(s.pretty(false, None, None).unwrap(), "a = 5\n".to_string());
   }
 
   #[test]
@@ -1547,6 +1672,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1555,6 +1681,7 @@ mod tests {
               value: MetaValue::VecString(self.a.iter().map(|x| x as &dyn ToString).collect()),
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1571,9 +1698,9 @@ mod tests {
       a: vec![5, 3, 1, 4, 2],
       bb: vec!["a".to_string(), "string".to_string()],
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a :\n - 5\n - 3\n - 1\n - 4\n - 2\nbb :\n - a\n - string\n".to_string()
     );
   }
@@ -1592,6 +1719,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1600,6 +1728,7 @@ mod tests {
               value: MetaValue::VecString(self.a.iter().map(|x| x as &dyn ToString).collect()),
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1616,9 +1745,9 @@ mod tests {
       a: vec![5, 3, 1, 4, 2],
       bb: vec!["a".to_string(), "string".to_string()],
     };
-    //    print!("{}", s.pretty(true, None).unwrap());
+    //    print!("{}", s.pretty(true, None, None).unwrap());
     assert_eq!(
-      s.pretty(true, None).unwrap(),
+      s.pretty(true, None, None).unwrap(),
       "a :\n - \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m4\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m2\u{1b}[39m\u{1b}[0m\nbb :\n - \u{1b}[1m\u{1b}[97ma\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\n".to_string()
     );
   }
@@ -1637,6 +1766,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1648,6 +1778,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1659,6 +1790,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -1684,6 +1816,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1695,6 +1828,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "n",
                 label_color: None,
@@ -1714,9 +1848,9 @@ mod tests {
         cccc: false,
       }],
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn :\n - a    = 5\n   bb   = string\n   cccc = false\n".to_string()
     );
   }
@@ -1735,6 +1869,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1749,6 +1884,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1771,16 +1907,16 @@ mod tests {
       a: Some(vec![5, 3, 1, 4, 2]),
       bb: Some(vec!["a".to_string(), "string".to_string()]),
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a :\n - 5\n - 3\n - 1\n - 4\n - 2\nbb :\n - a\n - string\n".to_string()
     );
 
     let s = T1 { a: None, bb: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a : null\nbb : null\n".to_string()
     );
   }
@@ -1799,6 +1935,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1813,6 +1950,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1835,15 +1973,18 @@ mod tests {
       a: Some(vec![5, 3, 1, 4, 2]),
       bb: Some(vec!["a".to_string(), "string".to_string()]),
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a :\n - 5\n - 3\n - 1\n - 4\n - 2\nbb :\n - a\n - string\n".to_string()
     );
 
     let s = T1 { a: None, bb: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
-    assert_eq!(s.pretty(false, None).unwrap(), "bb : null\n".to_string());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
+    assert_eq!(
+      s.pretty(false, None, None).unwrap(),
+      "bb : null\n".to_string()
+    );
   }
 
   #[test]
@@ -1860,6 +2001,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1874,6 +2016,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1896,16 +2039,16 @@ mod tests {
       a: Some(vec![5, 3, 1, 4, 2]),
       bb: Some(vec!["a".to_string(), "string".to_string()]),
     };
-    //    print!("{}", s.pretty(true, None).unwrap());
+    //    print!("{}", s.pretty(true, None, None).unwrap());
     assert_eq!(
-      s.pretty(true, None).unwrap(),
+      s.pretty(true, None, None).unwrap(),
       "a :\n - \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m4\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m2\u{1b}[39m\u{1b}[0m\nbb :\n - \u{1b}[1m\u{1b}[97ma\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\n".to_string()
     );
 
     let s = T1 { a: None, bb: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a : null\nbb : null\n".to_string()
     );
   }
@@ -1924,6 +2067,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1935,6 +2079,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -1946,6 +2091,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -1971,6 +2117,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -1982,6 +2129,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "n",
                 label_color: None,
@@ -2007,23 +2155,23 @@ mod tests {
         cccc: false,
       }]),
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn :\n - a    = 5\n   bb   = string\n   cccc = false\n".to_string()
     );
 
     let s = T2 { a: 5, n: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn : null\n".to_string()
     );
 
     let s = T2 { a: 5, n: None };
-    //    print!("{}", s.pretty(true, None).unwrap());
+    //    print!("{}", s.pretty(true, None, None).unwrap());
     assert_eq!(
-      s.pretty(true, None).unwrap(),
+      s.pretty(true, None, None).unwrap(),
       "a = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\nn :\u{1b}[35m null\n\u{1b}[39m".to_string()
     );
   }
@@ -2042,6 +2190,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -2053,6 +2202,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -2064,6 +2214,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -2089,6 +2240,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -2100,6 +2252,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "n",
                 label_color: None,
@@ -2125,20 +2278,20 @@ mod tests {
         cccc: false,
       }]),
     };
-    //    print!("{}", s.pretty(false, None).unwrap());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a = 5\nn :\n - a    = 5\n   bb   = string\n   cccc = false\n".to_string()
     );
 
     let s = T2 { a: 5, n: None };
-    //    print!("{}", s.pretty(false, None).unwrap());
-    assert_eq!(s.pretty(false, None).unwrap(), "a = 5\n".to_string());
+    //    print!("{}", s.pretty(false, None, None).unwrap());
+    assert_eq!(s.pretty(false, None, None).unwrap(), "a = 5\n".to_string());
 
     let s = T2 { a: 5, n: None };
-    //    print!("{}", s.pretty(true, None).unwrap());
+    //    print!("{}", s.pretty(true, None, None).unwrap());
     assert_eq!(
-      s.pretty(true, None).unwrap(),
+      s.pretty(true, None, None).unwrap(),
       "a = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n".to_string()
     );
   }
@@ -2172,6 +2325,7 @@ mod tests {
           padding: 5,
           separator: None,
           fields: vec![MetaField {
+            profiles: vec![],
             field_prefix: FieldPrefix::None,
             color: None,
             value: MetaValue::Variant {
@@ -2187,9 +2341,9 @@ mod tests {
     }
 
     let s = E1::Aa;
-    assert_eq!(s.pretty(false, None).unwrap(), "Aa\n".to_string());
+    assert_eq!(s.pretty(false, None, None).unwrap(), "Aa\n".to_string());
     let s = E1::Bb;
-    assert_eq!(s.pretty(false, None).unwrap(), "Bb\n".to_string());
+    assert_eq!(s.pretty(false, None, None).unwrap(), "Bb\n".to_string());
   }
 
   #[test]
@@ -2208,6 +2362,7 @@ mod tests {
           separator: None,
           fields: vec![
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "a",
                 label_color: None,
@@ -2219,6 +2374,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "bb",
                 label_color: None,
@@ -2230,6 +2386,7 @@ mod tests {
               },
             },
             MetaField {
+              profiles: vec![],
               field_prefix: FieldPrefix::Label {
                 label: "cccc",
                 label_color: None,
@@ -2256,6 +2413,7 @@ mod tests {
           padding: 5,
           separator: None,
           fields: vec![MetaField {
+            profiles: vec![],
             field_prefix: FieldPrefix::Label {
               label: "a",
               label_color: None,
@@ -2279,10 +2437,13 @@ mod tests {
       cccc: true,
     });
     assert_eq!(
-      s.pretty(false, None).unwrap(),
+      s.pretty(false, None, None).unwrap(),
       "a -->\n| a    = 14\n| bb   = aaa\n| cccc = true\n".to_string()
     );
     let s = E1::Bb;
-    assert_eq!(s.pretty(false, None).unwrap(), "a    = Bb\n".to_string());
+    assert_eq!(
+      s.pretty(false, None, None).unwrap(),
+      "a    = Bb\n".to_string()
+    );
   }
 }

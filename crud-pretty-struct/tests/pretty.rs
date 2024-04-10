@@ -7,7 +7,7 @@ fn empty_struct() {
   struct T1 {}
 
   let s = T1 {};
-  assert_eq!(s.pretty(false, None).unwrap(), "".to_string());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "".to_string());
 }
 
 #[test]
@@ -24,10 +24,42 @@ fn simple_struct() {
     bb: "string".to_string(),
     cccc: false,
   };
-  //  print!("{}", s.pretty(false, None));
+  //  print!("{}", s.pretty(false, None, None));
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a    = 5\nbb   = string\ncccc = false\n".to_string()
+  );
+}
+
+#[test]
+fn profile_struct() {
+  #[derive(PrettyPrint)]
+  struct T2 {
+    #[pretty(profiles = "a")]
+    a: u32,
+    #[pretty(profiles = "b")]
+    bb: String,
+    #[pretty(profiles = "a,b")]
+    cccc: bool,
+  }
+
+  let s = T2 {
+    a: 5,
+    bb: "string".to_string(),
+    cccc: false,
+  };
+  //  print!("{}", s.pretty(false, None, None));
+  assert_eq!(
+    s.pretty(false, None, None).unwrap(),
+    "a    = 5\nbb   = string\ncccc = false\n".to_string()
+  );
+  assert_eq!(
+    s.pretty(false, None, Some("a")).unwrap(),
+    "a    = 5\ncccc = false\n".to_string()
+  );
+  assert_eq!(
+    s.pretty(false, None, Some("b")).unwrap(),
+    "bb   = string\ncccc = false\n".to_string()
   );
 }
 
@@ -48,9 +80,9 @@ fn label_struct() {
     bb: "string".to_string(),
     cccc: false,
   };
-  //  print!("{}", s.pretty(false, None));
+  //  print!("{}", s.pretty(false, None, None));
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "label a = 5\nlabel b = string\nlabel c = false\n".to_string()
   );
 }
@@ -70,9 +102,9 @@ fn simple_struct_custom_separator() {
     bb: "string".to_string(),
     cccc: false,
   };
-  //  print!("{}", s.pretty(false, None));
+  //  print!("{}", s.pretty(false, None, None));
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a    -> 5\nbb   -> string\ncccc -> false\n".to_string()
   );
 }
@@ -100,9 +132,9 @@ fn nested_struct() {
       cccc: false,
     },
   };
-  //  print!("{}", s.pretty(false, None));
+  //  print!("{}", s.pretty(false, None, None));
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 5\nn -->\n| a    = 5\n| bb   = string\n| cccc = false\n".to_string()
   );
 }
@@ -117,8 +149,11 @@ fn skip_none_option_struct() {
   }
 
   let s = T1 { a: None, bb: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
-  assert_eq!(s.pretty(false, None).unwrap(), "bb = null\n".to_string());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
+  assert_eq!(
+    s.pretty(false, None, None).unwrap(),
+    "bb = null\n".to_string()
+  );
 }
 
 #[test]
@@ -137,7 +172,7 @@ fn simple_struct_colored() {
   };
   //  print!("{}", s.pretty(true, None));
   assert_eq!(
-    s.pretty(true, None).unwrap(),
+    s.pretty(true, None, None).unwrap(),
     "a    = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\nbb   = \u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\ncccc = \u{1b}[1m\u{1b}[97mfalse\u{1b}[39m\u{1b}[0m\n".to_string()
   );
 }
@@ -159,9 +194,9 @@ fn simple_struct_custom_color() {
     bb: "string".to_string(),
     cccc: false,
   };
-  //  print!("{}", s.pretty(true, None));
+  //  print!("{}", s.pretty(true, None, None));
   assert_eq!(
-    s.pretty(true, None).unwrap(),
+    s.pretty(true, None, None).unwrap(),
       "a    = \u{1b}[1m\u{1b}[31m5\u{1b}[39m\u{1b}[0m\nbb   = \u{1b}[1m\u{1b}[32mstring\u{1b}[39m\u{1b}[0m\ncccc = \u{1b}[1m\u{1b}[36mfalse\u{1b}[39m\u{1b}[0m\n".to_string()
   );
 }
@@ -183,9 +218,9 @@ fn simple_struct_custom_label_color() {
     bb: "string".to_string(),
     cccc: false,
   };
-  //  print!("{}", s.pretty(true, None));
+  //  print!("{}", s.pretty(true, None, None));
   assert_eq!(
-    s.pretty(true, None).unwrap(),
+    s.pretty(true, None, None).unwrap(),
      "\u{1b}[31ma\u{1b}[39m= \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n\u{1b}[32mbb\u{1b}[39m= \u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\n\u{1b}[36mcccc\u{1b}[39m= \u{1b}[1m\u{1b}[97mfalse\u{1b}[39m\u{1b}[0m\n".to_string()
   );
 }
@@ -207,8 +242,8 @@ fn skip_simple_struct() {
     bb: "string".to_string(),
     cccc: false,
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
-  assert_eq!(s.pretty(false, None).unwrap(), "a = 5\n".to_string());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "a = 5\n".to_string());
 }
 
 #[test]
@@ -235,8 +270,8 @@ fn skip_nested_struct() {
       cccc: false,
     },
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
-  assert_eq!(s.pretty(false, None).unwrap(), "a = 5\n".to_string());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "a = 5\n".to_string());
 }
 
 #[test]
@@ -251,9 +286,9 @@ fn option_struct() {
     a: Some(5),
     bb: None,
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a  = 5\nbb = null\n".to_string()
   );
 }
@@ -275,9 +310,9 @@ fn formatter_struct() {
     s: true,
     bb: Some("false".to_string()),
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a  = 5 format\ns  = ✔\nbb = ✘\n".to_string()
   );
 }
@@ -294,9 +329,9 @@ fn option_struct_colored() {
     a: Some(5),
     bb: None,
   };
-  //  print!("{}", s.pretty(true, None));
+  //  print!("{}", s.pretty(true, None, None));
   assert_eq!(
-    s.pretty(true, None).unwrap(),
+    s.pretty(true, None, None).unwrap(),
     "a  = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\nbb = \u{1b}[35mnull\u{1b}[39m\n".to_string()
   );
 }
@@ -323,16 +358,16 @@ fn nested_option_struct() {
       cccc: false,
     }),
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 5\nn -->\n| a    = 5\n| bb   = string\n| cccc = false\n".to_string()
   );
 
   let s = T2 { a: 5, n: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 5\nn = null\n".to_string()
   );
 }
@@ -359,15 +394,15 @@ fn skip_none_nested_option_struct() {
       cccc: false,
     }),
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 5\nn -->\n| a    = 5\n| bb   = string\n| cccc = false\n".to_string()
   );
 
   let s = T2 { a: 5, n: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
-  assert_eq!(s.pretty(false, None).unwrap(), "a = 5\n".to_string());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "a = 5\n".to_string());
 }
 
 #[test]
@@ -380,9 +415,9 @@ fn vec_struct() {
   let s = T1 {
     a: vec![5, 3, 7, 5],
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a :\n - 5\n - 3\n - 7\n - 5\n".to_string()
   );
 }
@@ -397,9 +432,9 @@ fn vec_struct_colored() {
   let s = T1 {
     a: vec![5, 3, 7, 5],
   };
-  //  print!("{}", s.pretty(true, None).unwrap());
+  //  print!("{}", s.pretty(true, None, None).unwrap());
   assert_eq!(
-    s.pretty(true, None).unwrap(),
+    s.pretty(true, None, None).unwrap(),
  "a :\n - \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m7\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n".to_string()
   );
 }
@@ -433,9 +468,9 @@ fn vec_struct_nested() {
       },
     ],
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
  "a :\n - a    = 5\n   bb   = string\n   cccc = false\n - a    = 5\n   bb   = string\n   cccc = false\n"  .to_string()
   );
 }
@@ -452,16 +487,16 @@ fn option_vec_struct() {
     a: Some(vec![5, 3, 1, 4, 2]),
     bb: Some(vec!["a".to_string(), "string".to_string()]),
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a :\n - 5\n - 3\n - 1\n - 4\n - 2\nbb :\n - a\n - string\n".to_string()
   );
 
   let s = T1 { a: None, bb: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a : null\nbb : null\n".to_string()
   );
 }
@@ -479,15 +514,18 @@ fn skip_none_option_vec_struct() {
     a: Some(vec![5, 3, 1, 4, 2]),
     bb: Some(vec!["a".to_string(), "string".to_string()]),
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a :\n - 5\n - 3\n - 1\n - 4\n - 2\nbb :\n - a\n - string\n".to_string()
   );
 
   let s = T1 { a: None, bb: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
-  assert_eq!(s.pretty(false, None).unwrap(), "bb : null\n".to_string());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
+  assert_eq!(
+    s.pretty(false, None, None).unwrap(),
+    "bb : null\n".to_string()
+  );
 }
 
 #[test]
@@ -502,16 +540,16 @@ fn option_vec_struct_colored() {
     a: Some(vec![5, 3, 1, 4, 2]),
     bb: Some(vec!["a".to_string(), "string".to_string()]),
   };
-  //  print!("{}", s.pretty(true, None).unwrap());
+  //  print!("{}", s.pretty(true, None, None).unwrap());
   assert_eq!(
-      s.pretty(true, None).unwrap(),
+      s.pretty(true, None, None).unwrap(),
       "a :\n - \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m3\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m1\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m4\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97m2\u{1b}[39m\u{1b}[0m\nbb :\n - \u{1b}[1m\u{1b}[97ma\u{1b}[39m\u{1b}[0m\n - \u{1b}[1m\u{1b}[97mstring\u{1b}[39m\u{1b}[0m\n".to_string()
     );
 
   let s = T1 { a: None, bb: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a : null\nbb : null\n".to_string()
   );
 }
@@ -538,23 +576,23 @@ fn nested_option_vec_struct() {
       cccc: false,
     }]),
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 5\nn :\n - a    = 5\n   bb   = string\n   cccc = false\n".to_string()
   );
 
   let s = T2 { a: 5, n: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 5\nn : null\n".to_string()
   );
 
   let s = T2 { a: 5, n: None };
-  //  print!("{}", s.pretty(true, None).unwrap());
+  //  print!("{}", s.pretty(true, None, None).unwrap());
   assert_eq!(
-    s.pretty(true, None).unwrap(),
+    s.pretty(true, None, None).unwrap(),
     "a = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\nn :\u{1b}[35m null\n\u{1b}[39m".to_string()
   );
 }
@@ -581,20 +619,20 @@ fn skip_none_nested_option_vec_struct() {
       cccc: false,
     }]),
   };
-  //  print!("{}", s.pretty(false, None).unwrap());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 5\nn :\n - a    = 5\n   bb   = string\n   cccc = false\n".to_string()
   );
 
   let s = T2 { a: 5, n: None };
-  //  print!("{}", s.pretty(false, None).unwrap());
-  assert_eq!(s.pretty(false, None).unwrap(), "a = 5\n".to_string());
+  //  print!("{}", s.pretty(false, None, None).unwrap());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "a = 5\n".to_string());
 
   let s = T2 { a: 5, n: None };
-  //  print!("{}", s.pretty(true, None));
+  //  print!("{}", s.pretty(true, None, None));
   assert_eq!(
-    s.pretty(true, None).unwrap(),
+    s.pretty(true, None, None).unwrap(),
     "a = \u{1b}[1m\u{1b}[97m5\u{1b}[39m\u{1b}[0m\n".to_string()
   );
 }
@@ -608,10 +646,10 @@ fn simple_enum() {
   }
 
   let s = E::AA;
-  assert_eq!(s.pretty(false, None).unwrap(), "AA\n".to_string());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "AA\n".to_string());
 
   let s = E::BB;
-  assert_eq!(s.pretty(false, None).unwrap(), "BB\n".to_string());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "BB\n".to_string());
 }
 
 #[test]
@@ -640,7 +678,7 @@ fn simple_enum_in_struct() {
   };
 
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a  = 1\nb  = AA\nbb = BB\nc  = 3\n".to_string()
   );
 }
@@ -668,7 +706,7 @@ fn vec_enum_in_struct() {
   };
 
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 1\nb :\n - AA\n - BB\nc = 3\n".to_string()
   );
 }
@@ -696,7 +734,7 @@ fn option_vec_enum_in_struct() {
   };
 
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 1\nb :\n - AA\n - BB\nc = 3\n".to_string()
   );
 
@@ -707,7 +745,7 @@ fn option_vec_enum_in_struct() {
   };
 
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "a = 1\nb : null\nc = 3\n".to_string()
   );
 }
@@ -727,7 +765,7 @@ fn tuple_enum() {
 
   let s = E::AA(St { aa: 2, cc: 4 });
   assert_eq!(
-    s.pretty(false, None).unwrap(),
+    s.pretty(false, None, None).unwrap(),
     "aa = 2\ncc = 4\n".to_string()
   );
 }
@@ -742,8 +780,11 @@ fn enum_with_label() {
   }
 
   let s = E::AA;
-  assert_eq!(s.pretty(false, None).unwrap(), "AA\n".to_string());
+  assert_eq!(s.pretty(false, None, None).unwrap(), "AA\n".to_string());
 
   let s = E::BB;
-  assert_eq!(s.pretty(false, None).unwrap(), "My Label\n".to_string());
+  assert_eq!(
+    s.pretty(false, None, None).unwrap(),
+    "My Label\n".to_string()
+  );
 }

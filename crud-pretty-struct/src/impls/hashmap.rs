@@ -13,7 +13,7 @@ impl<K: std::fmt::Display + PadStr, V: std::fmt::Display> PrettyPrint
       fields: vec![],
     }
   }
-  fn pretty(&self, colored: bool, prefix: Option<String>) -> Result<String> {
+  fn pretty(&self, colored: bool, prefix: Option<String>, _profile: Option<&str>) -> Result<String> {
     let Meta {
       separator, padding, ..
     } = self.meta();
