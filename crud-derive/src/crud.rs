@@ -50,7 +50,7 @@ impl From<CrudField> for ApiField {
 }
 
 #[derive(FromDeriveInput, Debug)]
-#[darling(attributes(crud))]
+#[darling(attributes(crud), forward_attrs(derive))]
 struct Crud {
   ident: Ident,
   pub data: Data<ApiVariant, CrudField>,

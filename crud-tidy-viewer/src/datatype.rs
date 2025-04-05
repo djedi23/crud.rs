@@ -240,7 +240,7 @@ pub fn get_col_data_type(col: &[&str]) -> ValueType {
     .iter()
     .map(|x| infer_type_from_string(x))
     .filter(|x| !matches!(x, &ValueType::Na))
-    .group_by(|&x| x)
+    .chunk_by(|&x| x)
     .into_iter()
     .map(|(key, group)| (key, group.count()))
     .max_by_key(|&(_, count)| count)

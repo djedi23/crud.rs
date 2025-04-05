@@ -17,15 +17,15 @@ members = [
 [workspace.dependencies]
 async-trait = "0.1"
 atty = "0.2"
-base64 = "0.21.0"
-bytesize = {version ="1.2"}
+base64 = "0.22"
+bytesize = {version ="2"}
 calm_io = "0.1"
 case = "1.0"
 chrono = { version = "0.4", default-features = false, features = ["std","serde","clock"] }
 clap = { version = "4.4", features = ["color", "suggestions", "env","unicode","wrap_help","cargo"] }
 clap_complete = "4.4"
-config = "0.13"
-crossterm = "0.26"
+config = "0.15"
+crossterm = "0.28"
 crud-api = { version = "0.1", path = "./crud-api" }
 crud-api-derive = { version = "0.1", path = "./crud-api-derive" }
 crud-api-endpoint ={ version = "0.1", path = "./crud-api-endpoint" }
@@ -38,8 +38,8 @@ crud-pretty-struct-derive = { version = "0.1", path = "./crud-pretty-struct-deri
 crud-tidy-viewer = { version = "0.1", path = "./crud-tidy-viewer" }
 csv = { version = "1.1" }
 darling = "0.20"
-derive_builder = "0.12"
-directories = "5.0"
+derive_builder = "0.20"
+directories = "6"
 humantime = {version ="2.1"}
 hyper = { version = "1", features = ["client","http1"] }
 http = "1"
@@ -48,10 +48,10 @@ hyper-tls = { version = "0.6" }
 hyper-util = { version = "0.1", features = ["client-legacy", "client","http1","tokio"] }
 indicatif = "0.17"
 is-terminal = "0.4"
-itertools = "0.10"
+itertools = "0.14"
 lazy_static = "1.4"
 log = "^0.4"
-miette = { version = "5.9", features = ["fancy"] }
+miette = { version = "7", features = ["fancy"] }
 openssl = { version = "0.10", features = ["vendored"] }
 owo-colors = "4"
 pad = "0.1"
@@ -64,18 +64,18 @@ regex = "1.6.0"
 scratch = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-serde_qs = "0.12"
+serde_qs = "0.14"
 serde_repr = "0.1"
 serde_yaml = { version = "0.9" }
-strum = { version = "0.25", features = ["derive"] }
+strum = { version = "0.27", features = ["derive"] }
 syn = { version = "2.0", features = ["extra-traits"] }
-termimad = {version ="0.20"}
-thiserror = "1.0"
+termimad = {version ="0.31"}
+thiserror = "2"
 tokio = { version = "1", features = ["full"] }
-tokio-rustls = "0.25"
-toml = { version = "0.7" }
-toml_edit = { version = "0.19" }
-unicode-width = "0.1"
-unicode-truncate = "0.2"
+tokio-rustls = "0.26"
+toml = { version = "0.8" }
+toml_edit = { version = "0.22" }
+unicode-width = "0.2"
+unicode-truncate = "2"
 webpki-roots = "0.26"
 

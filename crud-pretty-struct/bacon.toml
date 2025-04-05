@@ -77,3 +77,4 @@ allow_warnings = true
 [keybindings]
 # alt-m = "job:my-job"
 alt-t = "job:test_value"
+alt-d = "job:doc"
