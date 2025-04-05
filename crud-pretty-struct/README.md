@@ -52,7 +52,7 @@ struct Foo {
 ```
 ###### `color`
 
-custom color for this field. The avaiable colors are [Color].
+custom color for the value of this field. The avaiable colors are [Color].
 ```rust
 #[derive(PrettyPrint)]
 struct Foo {
@@ -62,11 +62,11 @@ struct Foo {
 ```
 ###### `label_color`
 
-custom color for the label of this field. The avaiable colors are [Color].
+custom color for the label of dthis field. The avaiable colors are [Color].
 ```rust
 #[derive(PrettyPrint)]
 struct Foo {
-    #[pretty(color="red")]
+    #[pretty(label_color="red")]
     field: u32
 }
 ```
@@ -89,6 +89,21 @@ struct Foo {
     #[pretty(skip_none)]
     field: Option<u32>
 }
+```
+###### `profile`
+the field is displayed only when this field profiles matched the profile declare when calling the `pretty` function.
+
+```rust
+#[derive(PrettyPrint)]
+struct Foo {
+  #[pretty(profiles = "a")]
+  field1: u32,
+  #[pretty(profiles = "a,b")]
+  field2: bool,
+}
+
+let foo = Foo{field1:0, field2:false};
+foo.pretty(false, None, Some("b")).unwrap(); //  print only `field2`
 ```
 ###### `formatter`
 
