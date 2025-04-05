@@ -2,6 +2,18 @@
 ## [Unreleased]
 
 
+<a name="v0.1.7"></a>
+## [v0.1.7] - 2025-04-05
+### Chore
+- update the dependencies
+- run clippy, fmt, ...
+- **crud-pretty-struct:** Update the documentation
+
+### Feat
+- **crud-pretty-struct:** add profile to PrettyPrint structs. Profiles group fields to print them together.
+- **crud-pretty-struct:** enums can be prettyprinted. Only unit and tuple enums are supported.
+
+
 <a name="v0.1.6"></a>
 ## [v0.1.6] - 2024-03-19
 ### Chore
@@ -76,7 +88,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-12-30
 
-[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/djedi23/crud.rs/compare/v0.1.7...HEAD
+[v0.1.7]: https://github.com/djedi23/crud.rs/compare/v0.1.6...v0.1.7
 [v0.1.6]: https://github.com/djedi23/crud.rs/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/djedi23/crud.rs/compare/v0.1.4...v0.1.5
 [v0.1.4]: https://github.com/djedi23/crud.rs/compare/v0.1.3...v0.1.4

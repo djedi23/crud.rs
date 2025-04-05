@@ -1,6 +1,6 @@
 [package]
 name = "crud-tidy-viewer"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 description= "CLI generator for your API. Array pretty printer"
 license = "MIT"
